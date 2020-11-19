@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Xml;
 using Eveindustry.StaticDataModels;
+using RestSharp;
 
 namespace Eveindustry
 {
@@ -36,9 +38,10 @@ namespace Eveindustry
         {
             Program.bpRepository = new BlueprintsInfoRepository(new BlueprintsInfoLoader(SdeGlobalPath));
             Program.typeRepository = new EveTypeInfoRepository(new TypeInfoLoader(SdeGlobalPath));
-            var hulk = typeRepository.FindByName("Hulk");
-            DumpManufacturingTree(0, hulk.Id, 1, new List<int> {4051, 4246, 4247, 4312}, null);
+            var hulk = typeRepository.FindByName(args[0]);
+            DumpManufacturingTree(0, hulk.Id, int.Parse(args[1]), new List<int> {4051, 4246, 4247, 4312}, null);
 
+            UpdatePriceWithEveMarketer();
             Console.WriteLine("========================================================");
             Console.WriteLine("TOTAL LIST");
             Console.WriteLine();
@@ -101,6 +104,43 @@ namespace Eveindustry
             }
         }
 
+        private static void UpdatePriceWithEveMarketer()
+        {
+            var typeIDS = TotalList.Keys.Select(k => k.Id).ToList();
+
+            var jitaId = "30000142";
+
+            var baseUrl = "https://api.evemarketer.com/";
+            var client = new RestClient(baseUrl);
+            
+            var request = new RestRequest("ec/marketstat");
+            foreach (var typeId in typeIDS)
+            {
+                request.AddQueryParameter("typeid", typeId.ToString());
+            }
+
+            request.AddQueryParameter("usesystem", jitaId);
+
+            var response = client.Execute(request);
+            var rawText = response.Content;
+
+            var doc = new XmlDocument();
+            doc.Load(new StringReader(rawText));
+            var items = doc["exec_api"]["marketstat"];
+
+            foreach (XmlNode childNode in items.ChildNodes)
+            {
+                var id = childNode.Attributes["id"].Value;
+                var minSell = Decimal.Parse(childNode["sell"]["min"].InnerText);
+                var maxBuy = Decimal.Parse(childNode["buy"]["max"].InnerText);
+
+                var item = TotalList.FirstOrDefault(i => i.Key.Id == int.Parse(id));
+
+                item.Key.PriceBuy = maxBuy;
+                item.Key.PriceSell = minSell;
+            }
+        }
+
         private static void DumpManufacturingStages()
         {
             var builtList = new List<EveType>();
@@ -108,6 +148,8 @@ namespace Eveindustry
             while (builtList.Count < TotalList.Keys.Count)
             {
                 var stageList = new List<ReqirementsInfo>();
+                decimal stageSell = 0;
+                decimal stageBuy = 0;
                 foreach (var item in TotalList)
                 {
                     if (builtList.Contains(item.Key))
@@ -134,9 +176,15 @@ namespace Eveindustry
                 foreach (var stageItem in stageList)
                 {
                     builtList.Add(stageItem.EveType);
-                    Console.WriteLine($"{stageItem.EveType.Name} : {stageItem.TotalQuantity}");
+                    var priceSell = stageItem.EveType.PriceSell * stageItem.TotalQuantity;
+                    var priceBuy = stageItem.EveType.PriceBuy * stageItem.TotalQuantity;
+
+                    stageSell += priceSell;
+                    stageBuy += priceBuy;
+                    Console.WriteLine($"{stageItem.EveType.Name} : {stageItem.TotalQuantity}. $ {priceSell} / {priceBuy}");
                 }
 
+                Console.WriteLine($"Stage TOTAL $: {stageSell} / {stageBuy}");
                 Console.WriteLine();
 
                 stageNum++;

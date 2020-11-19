@@ -10,23 +10,49 @@ namespace Eveindustry.StaticDataModels
     [MessagePackObject]
     public class EveType
     {
-        protected bool Equals(EveType other)
-        {
-            return Id == other.Id;
-        }
-
+        /// <inheritdoc />
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((EveType) obj);
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != this.GetType())
+            {
+                return false;
+            }
+
+            return this.Equals((EveType) obj);
         }
 
+        protected bool Equals(EveType other)
+        {
+            return this.Id == other.Id;
+        }
+
+        /// <inheritdoc />
         public override int GetHashCode()
         {
-            return Id;
+            return this.Id;
         }
+
+        /// <summary>
+        /// Gets or sets item price (data is not included in eve SDE)
+        /// </summary>
+        [IgnoreMember]
+        public decimal PriceSell { get; set; }
+
+        /// <summary>
+        /// Gets or sets item price (data is not included in eve SDE)
+        /// </summary>
+        [IgnoreMember]
+        public decimal PriceBuy { get; set; }
 
         /// <summary>
         /// Gets or sets eve type id.
