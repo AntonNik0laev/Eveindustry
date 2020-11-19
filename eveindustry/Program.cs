@@ -9,7 +9,7 @@ namespace Eveindustry
 {
     public class ReqirementsInfo
     {
-        public int TotalQuantity { get; set; }
+        public uint TotalQuantity { get; set; }
 
         public List<Material> Requirements { get; set; }
 
@@ -36,8 +36,9 @@ namespace Eveindustry
         {
             Program.bpRepository = new BlueprintsInfoRepository(new BlueprintsInfoLoader(SdeGlobalPath));
             Program.typeRepository = new EveTypeInfoRepository(new TypeInfoLoader(SdeGlobalPath));
-            var hulk = typeRepository.FindByName("Hulk");
-            DumpManufacturingTree(0, hulk.Id, 1, new List<int> {4051, 4246, 4247, 4312}, null);
+            var hulk = typeRepository.FindByName(args[0]);
+            var quantity =  uint.Parse(args[1]);
+            DumpManufacturingTree(0, hulk.Id, quantity, new List<int> {4051, 4246, 4247, 4312}, null);
 
             Console.WriteLine("========================================================");
             Console.WriteLine("TOTAL LIST");
@@ -48,7 +49,7 @@ namespace Eveindustry
             Console.ReadKey();
         }
 
-        private static void DumpManufacturingTree(int indent, int typeId, int quantity, List<int> terminationTypes,
+        private static void DumpManufacturingTree(int indent, int typeId, uint quantity, List<int> terminationTypes,
             int? parentTypeId)
         {
             var bp = bpRepository.FindByProductId(typeId);
@@ -87,7 +88,7 @@ namespace Eveindustry
             foreach (var material in requiredMaterials)
             {
                 var matInfo = typeRepository.GetById(material.TypeId);
-                var requiredQuantity = material.Quantity * numberOfRuns;
+                var requiredQuantity = (uint)material.Quantity * numberOfRuns;
                 DumpManufacturingTree(indent + 1, matInfo.Id, requiredQuantity, terminationTypes, typeId);
             }
         }
@@ -143,17 +144,17 @@ namespace Eveindustry
             }
         }
 
-        private static (int numberOfRuns, int quantity) GetNumbetOfRunsAndQuantity(
+        private static (uint numberOfRuns, uint quantity) GetNumbetOfRunsAndQuantity(
             BlueprintActivity activity,
-            int requiredQuantity)
+            uint requiredQuantity)
         {
             if (activity == null)
             {
                 return (0, 0);
             }
 
-            var builtQuantity = activity.Products.FirstOrDefault().Quantity;
-            int numberOfRuns = requiredQuantity / builtQuantity;
+            uint builtQuantity = (uint)activity.Products.FirstOrDefault().Quantity;
+            uint numberOfRuns = requiredQuantity / builtQuantity;
             if (requiredQuantity % builtQuantity != 0)
             {
                 numberOfRuns += 1;
