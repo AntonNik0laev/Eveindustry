@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using Eveindustry.StaticDataModels;
+using Newtonsoft.Json;
 using RestSharp;
 
 namespace Eveindustry
@@ -16,6 +17,18 @@ namespace Eveindustry
         public List<Material> Requirements { get; set; }
 
         public EveType EveType { get; set; }
+    }
+
+    public class ESIPriceData
+    {
+        [JsonProperty("adjusted_price")]
+        public decimal AdjustedPrice { get; set; }
+
+        [JsonProperty("average_price")]
+        public decimal AveragePrice { get; set; }
+
+        [JsonProperty("type_id")]
+        public int TypeId { get; set; }
     }
 
     /// <summary>
@@ -39,7 +52,7 @@ namespace Eveindustry
             Program.bpRepository = new BlueprintsInfoRepository(new BlueprintsInfoLoader(SdeGlobalPath));
             Program.typeRepository = new EveTypeInfoRepository(new TypeInfoLoader(SdeGlobalPath));
             var hulk = typeRepository.FindByName(args[0]);
-            DumpManufacturingTree(0, hulk.Id, int.Parse(args[1]), new List<int> {4051, 4246, 4247, 4312}, null);
+            DumpManufacturingTree(0, hulk.Id, int.Parse(args[1]), new List<int> {4051, 4246, 4247, 4312, 17476}, null);
 
             UpdatePriceWithEveMarketer();
             Console.WriteLine("========================================================");
@@ -112,7 +125,7 @@ namespace Eveindustry
 
             var baseUrl = "https://api.evemarketer.com/";
             var client = new RestClient(baseUrl);
-            
+
             var request = new RestRequest("ec/marketstat");
             foreach (var typeId in typeIDS)
             {
@@ -181,10 +194,11 @@ namespace Eveindustry
 
                     stageSell += priceSell;
                     stageBuy += priceBuy;
-                    Console.WriteLine($"{stageItem.EveType.Name} : {stageItem.TotalQuantity}. $ {priceSell} / {priceBuy}");
+                    Console.WriteLine(
+                        $"{stageItem.EveType.Name} : {stageItem.TotalQuantity}. $ {priceSell:N} / {priceBuy:N}");
                 }
 
-                Console.WriteLine($"Stage TOTAL $: {stageSell} / {stageBuy}");
+                Console.WriteLine($"Stage TOTAL $: {stageSell:N} / {stageBuy:N}");
                 Console.WriteLine();
 
                 stageNum++;
