@@ -13,7 +13,7 @@ namespace Eveindustry
         /// </summary>
         /// <param name="id">type id.</param>
         /// <returns><see cref="EveType"/>. </returns>
-        EveType GetById(int id);
+        EveType GetById(long id);
 
         /// <summary>
         /// Find eve type info by exact type name.

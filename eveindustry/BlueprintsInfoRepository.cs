@@ -19,13 +19,13 @@ namespace Eveindustry
         }
 
         /// <inheritdoc />
-        public BlueprintInfo GetByBluprintId(int blueprintId)
+        public BlueprintInfo GetByBluprintId(long blueprintId)
         {
             return this.details[blueprintId.ToString()];
         }
 
         /// <inheritdoc />
-        public BlueprintInfo FindByProductId(int productId)
+        public BlueprintInfo FindByProductId(long productId)
         {
             var byManufacturing = this.details.Values.FirstOrDefault(v =>
                 v.Activities.Manufacturing?.Products?.Any(p => p.TypeId == productId) ?? false);

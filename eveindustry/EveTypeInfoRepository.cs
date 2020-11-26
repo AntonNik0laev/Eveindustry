@@ -20,7 +20,7 @@ namespace Eveindustry
         }
 
         /// <inheritdoc />
-        public EveType GetById(int id)
+        public EveType GetById(long id)
         {
             var result = this.data[id.ToString()];
             if (result != null)
