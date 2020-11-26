@@ -39,7 +39,7 @@ namespace Eveindustry.StaticDataModels
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            return this.Id;
+            return (int)this.Id;
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Eveindustry.StaticDataModels
         /// Gets or sets eve type id.
         /// </summary>
         [IgnoreMember]
-        public int Id { get; set; }
+        public long Id { get; set; }
 
         /// <summary>
         /// Gets or sets GroupID.

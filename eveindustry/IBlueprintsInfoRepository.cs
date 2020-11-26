@@ -12,13 +12,13 @@ namespace Eveindustry
         /// </summary>
         /// <param name="blueprintId">blueprint id. </param>
         /// <returns><see cref="BlueprintInfo"/>. </returns>
-        BlueprintInfo GetByBluprintId(int blueprintId);
+        BlueprintInfo GetByBluprintId(long blueprintId);
 
         /// <summary>
         /// Search blueprint info by blueprint product id.
         /// </summary>
         /// <param name="productId">blueprint product id. </param>
         /// <returns> <see cref="BlueprintInfo"/>. </returns>
-        BlueprintInfo FindByProductId(int productId);
+        BlueprintInfo FindByProductId(long productId);
     }
 }
