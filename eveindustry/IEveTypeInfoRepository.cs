@@ -28,5 +28,11 @@ namespace Eveindustry
         /// <param name="partName">partial name. </param>
         /// <returns>matched types. </returns>
         List<EveType> Search(string partName);
+
+        /// <summary>
+        /// Get all eve types
+        /// </summary>
+        /// <returns>all eve types. </returns>
+        List<EveType> GetAll();
     }
 }

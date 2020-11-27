@@ -10,9 +10,25 @@ namespace Eveindustry.Models
     public sealed class EveItemManufacturingInfo
     {
         /// <summary>
+        /// Manufacturing activity kinds - Manufacturing or Reaction.
+        /// </summary>
+        public enum ActivityKinds
+        {
+            /// <summary>
+            /// Manufacturing activity
+            /// </summary>
+            Manufacturing,
+
+            /// <summary>
+            /// Reaction activity
+            /// </summary>
+            Reaction,
+        }
+
+        /// <summary>
         /// Gets or sets Eve type id.
         /// </summary>
-        public long TypeId { get; set; }
+        public long TypeId { get; init; }
 
         /// <summary>
         /// Gets or sets type name.
@@ -48,7 +64,8 @@ namespace Eveindustry.Models
         /// Gets adjusted price of  materials per item.
         /// </summary>
         public decimal MaterialsAdjustedPricePerItem =>
-            this.AggregateRequirements((sum, item) => sum += item.Material.AdjustedPrice * item.Quantity) / this.ItemsPerRun;
+            this.AggregateRequirements((sum, item) => sum += item.Material.AdjustedPrice * item.Quantity) /
+            this.ItemsPerRun;
 
         /// <summary>
         /// Gets jita buy price for all required materials per single item.
@@ -61,6 +78,11 @@ namespace Eveindustry.Models
         /// </summary>
         public decimal MaterialsJitaSellPricePerItem =>
             this.AggregateRequirements((sum, item) => sum += item.TotalJitaSellPrice) / this.ItemsPerRun;
+
+        /// <summary>
+        /// Gets a value indicating whether item can be manufactured.
+        /// </summary>
+        public bool CanBeManufactured => this.ItemsPerRun > 0;
 
         // Equality members
 

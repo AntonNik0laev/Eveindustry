@@ -13,7 +13,9 @@ namespace Eveindustry
     public class EveBasicManufacturingInfo
     {
         public long TypeId { get; set; }
+
         public List<EveBasicManufacturingInfo> Requirements { get; set; }
+
         public long Quantity { get; set; }
     }
 
@@ -36,6 +38,14 @@ namespace Eveindustry
         {
             Program.bpRepository = new BlueprintsInfoRepository(new BlueprintsInfoLoader(SdeGlobalPath));
             Program.typeRepository = new EveTypeInfoRepository(new TypeInfoLoader(SdeGlobalPath));
+
+            var allTypes = typeRepository.GetAll();
+            Console.WriteLine("Starting get all prices.. ");
+            var sw = Stopwatch.StartNew();
+            var prices = GetEveMarketerJitaPrices(allTypes.Select(t => t.Id)).ToList();
+            sw.Stop();
+            Console.WriteLine($"done get all prices for {allTypes.Count} types. took: {sw.ElapsedMilliseconds} ms");
+            Console.ReadKey();
             var hulk = typeRepository.FindByName(args[0]);
             var results = new List<EveBasicManufacturingInfo>();
             TraverseManufacturingTree(hulk.Id, int.Parse(args[1]), new List<int> {4051, 4246, 4247, 4312, 17476},
@@ -150,35 +160,46 @@ namespace Eveindustry
         private static IEnumerable<(long typeId, decimal priceSell, decimal priceBuy)> GetEveMarketerJitaPrices(
             IEnumerable<long> typeIds)
         {
-            var typeIDS = typeIds;
+            var pageSize = 200;
+            var typeIdsList = typeIds as long[] ?? typeIds.ToArray();
+            int totalPages = (int) Math.Ceiling((double) typeIdsList.Count() / pageSize);
+            var typeIDS = typeIdsList;
 
             var jitaId = "30000142";
 
             var baseUrl = "https://api.evemarketer.com/";
             var client = new RestClient(baseUrl);
 
-            var request = new RestRequest("ec/marketstat");
-            foreach (var typeId in typeIDS)
+            for (int pageNum = 0; pageNum < totalPages; pageNum++)
             {
-                request.AddQueryParameter("typeid", typeId.ToString());
-            }
+                var request = new RestRequest("ec/marketstat");
+                var length = (pageNum * pageSize) + pageSize > typeIdsList.Length
+                    ? (typeIdsList.Length - (pageNum * pageSize))
+                    : pageSize;
+                var span = new ReadOnlySpan<long>(typeIdsList, pageNum * pageSize, length);
+                for (int i = 0; i < span.Length; i++)
+                {
+                    var typeId = span[i];
+                    request.AddQueryParameter("typeid", typeId.ToString());
+                }
 
-            request.AddQueryParameter("usesystem", jitaId);
+                request.AddQueryParameter("usesystem", jitaId);
 
-            var response = client.Execute(request);
-            var rawText = response.Content;
+                var response = client.Execute(request);
+                var rawText = response.Content;
 
-            var doc = new XmlDocument();
-            doc.Load(new StringReader(rawText));
-            var items = doc["exec_api"]["marketstat"];
+                var doc = new XmlDocument();
+                doc.Load(new StringReader(rawText));
+                var items = doc["exec_api"]["marketstat"];
 
-            foreach (XmlNode childNode in items.ChildNodes)
-            {
-                var id = long.Parse(childNode.Attributes["id"].Value);
-                var minSell = Decimal.Parse(childNode["sell"]["min"].InnerText);
-                var maxBuy = Decimal.Parse(childNode["buy"]["max"].InnerText);
+                foreach (XmlNode childNode in items.ChildNodes)
+                {
+                    var id = long.Parse(childNode.Attributes["id"].Value);
+                    var minSell = Decimal.Parse(childNode["sell"]["min"].InnerText);
+                    var maxBuy = Decimal.Parse(childNode["buy"]["max"].InnerText);
 
-                yield return (id, minSell, maxBuy);
+                    yield return (id, minSell, maxBuy);
+                }
             }
         }
 
@@ -231,6 +252,7 @@ namespace Eveindustry
             decimal systemCost = 0.05M;
 
             var formatString = "{0,35}|{1,15:N0}|{2, 15:N0}|{3, 15:N0}|{4, 15:N0}|{5,15:N0}|{6,15:N0}";
+
             void PrintHeader()
             {
                 Console.WriteLine(
