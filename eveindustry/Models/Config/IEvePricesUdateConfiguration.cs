@@ -10,4 +10,9 @@
         /// </summary>
         long UpdateIntervalMinutes { get; }
     }
+
+    class EvePricesUdateConfiguration : IEvePricesUdateConfiguration
+    {
+        public long UpdateIntervalMinutes { get; } = 60;
+    }
 }

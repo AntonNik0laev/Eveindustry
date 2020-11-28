@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Eveindustry.Models;
 using Eveindustry.StaticDataModels;
@@ -104,10 +105,10 @@ namespace Eveindustry
 
         /// <inheritdoc />
         public IEnumerable<IEnumerable<EveManufacturingUnit>> GroupIntoStages(
-            IEnumerable<EveManufacturingUnit> flatList)
+            IEnumerable<EveManufacturingUnit> flatList, IEnumerable<long> ignoredTypeIds)
         {
-            var builtList = new SortedList<long, EveItemManufacturingInfo>();
-
+            var builtList = new List<long>();
+            builtList.AddRange(ignoredTypeIds);
             var stages = new List<List<EveManufacturingUnit>>();
             var eveManufacturingUnits = flatList.ToList();
 
@@ -117,14 +118,14 @@ namespace Eveindustry
                 stages.Add(stageList);
                 foreach (var item in eveManufacturingUnits)
                 {
-                    if (builtList.ContainsKey(item.Material.TypeId))
+                    if (builtList.Contains(item.Material.TypeId))
                     {
                         continue; // is that already built?
                     }
 
                     var requirementTypes = item.Material.Requirements;
 
-                    if (!requirementTypes.All(i => builtList.ContainsKey(i.Material.TypeId)))
+                    if (!requirementTypes.All(i => builtList.Contains(i.Material.TypeId)))
                     {
                         continue; // Is all prerequisites built?
                     }
@@ -134,7 +135,7 @@ namespace Eveindustry
 
                 foreach (var item in stageList)
                 {
-                    builtList.Add(item.Material.TypeId, item.Material);
+                    builtList.Add(item.Material.TypeId);
                 }
             }
 
@@ -152,7 +153,7 @@ namespace Eveindustry
 
             var activity = bpItem?.Activities?.Manufacturing ?? bpItem?.Activities?.Reaction;
             var dependencies = activity?.Materials ?? new Material[0];
-            var itemsPerRun = activity?.Products?[0]?.Quantity ?? 0;
+            var itemsPerRun = activity?.Products?[0]?.Quantity ?? 1;
 
             var manufacturingInfo = new EveItemManufacturingInfo()
             {
@@ -187,14 +188,9 @@ namespace Eveindustry
 
         private (long NumberOfRuns, long Quantity) GetNumbetOfRunsAndQuantity(int itemsPerRun, long requiredQuantity)
         {
-            var builtQuantity = itemsPerRun;
-            long numberOfRuns = requiredQuantity / builtQuantity;
-            if (requiredQuantity % builtQuantity != 0)
-            {
-                numberOfRuns += 1;
-            }
+            long numberOfRuns = (long)Math.Ceiling(requiredQuantity / (double)itemsPerRun);
 
-            var correctedQuantity = numberOfRuns * builtQuantity;
+            var correctedQuantity = numberOfRuns * itemsPerRun;
             return (numberOfRuns, correctedQuantity);
         }
     }

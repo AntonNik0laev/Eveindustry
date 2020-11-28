@@ -82,7 +82,7 @@ namespace Eveindustry.Models
         /// <summary>
         /// Gets a value indicating whether item can be manufactured.
         /// </summary>
-        public bool CanBeManufactured => this.ItemsPerRun > 0;
+        public bool CanBeManufactured => this.Requirements.Count > 0;
 
         // Equality members
 

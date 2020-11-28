@@ -105,7 +105,7 @@ namespace Eveindustry
                     var minSell = Decimal.Parse(childNode["sell"]["min"].InnerText);
                     var maxBuy = Decimal.Parse(childNode["buy"]["max"].InnerText);
 
-                    result.Add(id, new EvePriceInfo(id, minSell, maxBuy));
+                    result.Add(id, new EvePriceInfo(id, maxBuy, minSell));
                 }
             }
 
