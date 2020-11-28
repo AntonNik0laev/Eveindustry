@@ -73,6 +73,7 @@ namespace Eveindustry
                 {
                     totalList.Add(typeId);
                 }
+
                 var bp = bpRepository.FindByProductId(typeId);
 
                 var activity = bp?.Activities?.Manufacturing ?? bp?.Activities?.Reaction;
@@ -85,6 +86,7 @@ namespace Eveindustry
                     AddToListRecursive(matInfo.Id);
                 }
             }
+
             AddToListRecursive(typeId);
 
             return totalList;
@@ -106,7 +108,8 @@ namespace Eveindustry
                     "PriceSell", // 3
                     "Job cost", // 4
                     "Mat Buy", // 5
-                    "Mat sell"); // 6));
+                    "Mat sell", // 6
+                    "Remain"); // 7
             }
 
             void PrintDetails(EveManufacturingUnit unit)
@@ -119,7 +122,8 @@ namespace Eveindustry
                     unit.TotalJitaSellPrice, // 3
                     unit.MaterialsAdjustedPrice * systemCost, // 4
                     unit.MaterialsJitaBuyPrice,
-                    unit.MaterialsJitaSellPrice);
+                    unit.MaterialsJitaSellPrice,
+                    unit.RemainingQuantity);
                 Console.WriteLine(details);
             }
 
@@ -151,6 +155,32 @@ namespace Eveindustry
                 PrintTotal(stageList);
                 Console.WriteLine();
             }
+
+            Console.WriteLine("Remaining items: ");
+            var formatStringRemaining = "{0,35}|{1,15:N0}|{2, 15:N0}|{3, 15:N0}";
+            var itemsFlat = items.
+                SelectMany(i => i).
+                OrderByDescending(i => i.RemainingJitaSellPrice).
+                ToList();
+            foreach (var item in itemsFlat)
+            {
+                if(item.RemainingQuantity == 0) {continue;}
+                var formatted = string.Format(
+                    formatStringRemaining,
+                    item.Material.Name,
+                    item.RemainingQuantity,
+                    item.RemainingJitaBuyPrice,
+                    item.RemainingJitaSellPrice);
+                Console.WriteLine(formatted);
+            }
+
+            var totalFormatted = string.Format(
+                formatStringRemaining,
+                "TOTAL",
+                itemsFlat.Sum(i => i.RemainingQuantity),
+                itemsFlat.Sum(i => i.RemainingJitaBuyPrice),
+                itemsFlat.Sum(i => i.RemainingJitaSellPrice));
+            Console.WriteLine(totalFormatted);
         }
     }
 }

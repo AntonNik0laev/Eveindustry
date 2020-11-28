@@ -65,13 +65,6 @@ namespace Eveindustry
             {
                 var currentMaterial = currentItem.Material;
 
-                var (numberOfRuns, correctedQuantity) =
-                    this.GetNumbetOfRunsAndQuantity(currentMaterial.ItemsPerRun, currentItem.Quantity);
-                if (correctedQuantity == 0)
-                {
-                    correctedQuantity = quantity;
-                }
-
                 if (!totalList.ContainsKey(currentItem.Material.TypeId))
                 {
                     totalList.Add(currentItem.Material.TypeId, new EveManufacturingUnit()
@@ -81,9 +74,24 @@ namespace Eveindustry
                     });
                 }
 
-                totalList[currentMaterial.TypeId].Quantity += correctedQuantity;
+                var (numberOfRuns, correctedQuantity, remainingQuantity) =
+                    this.GetNumbetOfRunsAndQuantity(
+                        currentMaterial.ItemsPerRun,
+                        currentItem.Quantity,
+                        totalList[currentMaterial.TypeId].RemainingQuantity);
+                if (!currentMaterial.CanBeManufactured)
+                {
+                    correctedQuantity = currentItem.Quantity;
+                }
 
+                totalList[currentMaterial.TypeId].Quantity += correctedQuantity;
+                totalList[currentMaterial.TypeId].RemainingQuantity = remainingQuantity;
                 if (typeIds.Any(i => i == currentItem.Material.TypeId))
+                {
+                    return;
+                }
+
+                if (correctedQuantity == 0)
                 {
                     return;
                 }
@@ -99,7 +107,7 @@ namespace Eveindustry
                 }
             }
 
-            BuildFlatListRecursive(new EveManufacturingUnit { Material = info, Quantity = quantity });
+            BuildFlatListRecursive(new EveManufacturingUnit {Material = info, Quantity = quantity });
             return totalList.Values;
         }
 
@@ -108,7 +116,7 @@ namespace Eveindustry
             IEnumerable<EveManufacturingUnit> flatList, IEnumerable<long> ignoredTypeIds)
         {
             var builtList = new List<long>();
-            builtList.AddRange(ignoredTypeIds);
+            
             var stages = new List<List<EveManufacturingUnit>>();
             var eveManufacturingUnits = flatList.ToList();
 
@@ -124,6 +132,11 @@ namespace Eveindustry
                     }
 
                     var requirementTypes = item.Material.Requirements;
+                    if (ignoredTypeIds.Contains(item.Material.TypeId))
+                    {
+                        stageList.Add(item);
+                        continue;
+                    }
 
                     if (!requirementTypes.All(i => builtList.Contains(i.Material.TypeId)))
                     {
@@ -186,12 +199,22 @@ namespace Eveindustry
             return manufacturingInfo;
         }
 
-        private (long NumberOfRuns, long Quantity) GetNumbetOfRunsAndQuantity(int itemsPerRun, long requiredQuantity)
+        private (long NumberOfRuns, long Quantity, long RemainingQuantity) GetNumbetOfRunsAndQuantity(int itemsPerRun,
+            long requiredQuantity, long remainingQuantity)
         {
-            long numberOfRuns = (long)Math.Ceiling(requiredQuantity / (double)itemsPerRun);
+            var discountedRequiredQuantity = requiredQuantity - remainingQuantity;
+            var discountedRemainingQuantity = Math.Max(0, remainingQuantity - requiredQuantity );
+            if (discountedRequiredQuantity <= 0)
+            {
+                return (0, 0, discountedRemainingQuantity);
+            }
+
+            long numberOfRuns = (long) Math.Ceiling(discountedRequiredQuantity / (double) itemsPerRun);
 
             var correctedQuantity = numberOfRuns * itemsPerRun;
-            return (numberOfRuns, correctedQuantity);
+            var totalBuilt = correctedQuantity + remainingQuantity;
+            var addedRemainingQuantity = totalBuilt - requiredQuantity;
+            return (numberOfRuns, correctedQuantity, addedRemainingQuantity);
         }
     }
 }

@@ -13,9 +13,14 @@ namespace Eveindustry.Models
         public EveItemManufacturingInfo Material { get; set; }
 
         /// <summary>
-        /// Gets or sets material quantity.
+        /// Gets or sets material quantity to build.
         /// </summary>
         public long Quantity { get; set; }
+
+        /// <summary>
+        /// Gets or sets material remaining quantity after build.
+        /// </summary>
+        public long RemainingQuantity { get; set; }
 
         /// <summary>
         /// Gets total adjusted price for materials multiplied by quantity.
@@ -31,6 +36,16 @@ namespace Eveindustry.Models
         /// Gets total jita sell price multiplied by quantity.
         /// </summary>
         public decimal TotalJitaSellPrice => this.Material.PriceSell * this.Quantity;
+
+        /// <summary>
+        /// Gets jita buy for remaining items
+        /// </summary>
+        public decimal RemainingJitaBuyPrice => this.Material.PriceBuy * this.RemainingQuantity;
+
+        /// <summary>
+        /// Gets jita sell for remaining items
+        /// </summary>
+        public decimal RemainingJitaSellPrice => this.Material.PriceSell * this.RemainingQuantity;
 
         /// <summary>
         /// Gets total jita buy price for required materials
