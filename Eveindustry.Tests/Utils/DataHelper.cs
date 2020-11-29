@@ -10,7 +10,7 @@ namespace Eveindustry.Tests.Utils
     {
         public static EveType NewType(long id, string nameEn)
         {
-            return new EveType() {Id = id, Name = new LocalizedText() {En = nameEn}};
+            return new() {Id = id, Name = new()  {En = nameEn}};
         }
 
         public static BlueprintInfo NewBp(

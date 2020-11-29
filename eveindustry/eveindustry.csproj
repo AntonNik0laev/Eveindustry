@@ -4,6 +4,9 @@
         <OutputType>Exe</OutputType>
         <TargetFramework>net5.0</TargetFramework>
         <RootNamespace>Eveindustry</RootNamespace>
+        <AssemblyName>Eveindustry</AssemblyName>
+        <Company>Eveindustry</Company>
+        <Product>Eveindustry</Product>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -30,10 +33,19 @@
       <None Remove="stylecop.json" />
       <AdditionalFiles Include="main.ruleset" />
       <AdditionalFiles Include="stylecop.json" />
+      <None Remove="publish\**" />
     </ItemGroup>
 
     <ItemGroup>
       <None Include="..\.editorconfig" Link=".editorconfig" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="publish\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="publish\**" />
     </ItemGroup>
 
 </Project>
