@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Eveindustry.Core.Models;
 using Eveindustry.Core.StaticDataModels;
 
 namespace Eveindustry.Core
@@ -20,8 +21,15 @@ namespace Eveindustry.Core
         /// </summary>
         /// <param name="name">eve type name. </param>
         /// <returns><see cref="EveType"/>. </returns>
-        EveType FindByName(string name);
+        EveType FindByExactName(string name);
 
+        /// <summary>
+        /// Performs search across all records to find partially matched list.
+        /// </summary>
+        /// <param name="partialName">partial name. </param>
+        /// <param name="options">search options. </param>
+        /// <returns>list of matches. </returns>
+        List<EveType> FindByPartialName(string partialName, FindByPartialNameOptions options);
         /// <summary>
         /// Find one or more eve types by partial name.
         /// </summary>

@@ -26,8 +26,8 @@ namespace Eveindustry.CLI
         public static void Main(string[] args)
         {
             Program.bpRepository = new BlueprintsInfoRepository(new BlueprintsInfoLoader(SdeGlobalPath));
-            Program.typeRepository = new EveTypeInfoRepository(new TypeInfoLoader(SdeGlobalPath));
-            var hulk = typeRepository.FindByName(args[0]);
+            Program.typeRepository = new EveTypeInfoRepository(new TypeInfoLoader(new TypeInfoLoaderOptions(){SdeBasePath = SdeGlobalPath}));
+            var hulk = typeRepository.FindByExactName(args[0]);
 
             var terminationTypes = new List<long> {4051, 4246, 4247, 4312, 17476};
             var quantity = int.Parse(args[1]);

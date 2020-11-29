@@ -6,9 +6,9 @@
         /// <summary>
         /// Initializes a new instance of the <see cref="TypeInfoLoader"/> class.
         /// </summary>
-        /// <param name="sdeBasePath">base path to sde data. </param>
-        public TypeInfoLoader(string sdeBasePath)
-            : base(sdeBasePath)
+        /// <param name="options">options, containing base path to sde data. </param>
+        public TypeInfoLoader(TypeInfoLoaderOptions options)
+            : base(options.SdeBasePath)
         {
         }
 

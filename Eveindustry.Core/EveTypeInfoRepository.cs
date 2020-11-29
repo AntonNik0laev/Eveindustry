@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Eveindustry.Core.Models;
 using Eveindustry.Core.StaticDataModels;
 
 namespace Eveindustry.Core
@@ -29,11 +30,27 @@ namespace Eveindustry.Core
         }
 
         /// <inheritdoc/>
-        public EveType FindByName(string name)
+        public EveType FindByExactName(string name)
         {
             var (key, value) = this.data.FirstOrDefault(d => d.Value.Name.En == name);
 
             return value;
+        }
+
+        /// <inheritdoc />
+        public List<EveType> FindByPartialName(string partialName, FindByPartialNameOptions options)
+        {
+            var comparison = StringComparison.InvariantCultureIgnoreCase;
+            Func<EveType, bool> predicate = options switch
+            {
+                FindByPartialNameOptions.ExactMatch => type =>
+                    string.Equals(type.Name.En, partialName, comparison),
+                FindByPartialNameOptions.Contains => type =>
+                    type.Name.En.Contains(partialName, comparison),
+                FindByPartialNameOptions.StartingWith => type => type.Name.En.StartsWith(partialName, comparison),
+                _ => throw new ArgumentOutOfRangeException(nameof(options), options, null)
+            };
+            return this.data.Values.Where(t => t?.Name?.En != null && predicate(t)).ToList();
         }
 
         /// <inheritdoc />
