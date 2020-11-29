@@ -3,21 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Eveindustry.CLI.Models;
-using Eveindustry.CLI.Models.Config;
-using Eveindustry.CLI.StaticDataModels;
+using Eveindustry.Core;
+using Eveindustry.Core.Models;
+using Eveindustry.Core.Models.Config;
+using Eveindustry.Core.StaticDataModels;
 
 namespace Eveindustry.CLI
 {
-    public class EveBasicManufacturingInfo
-    {
-        public long TypeId { get; set; }
-
-        public List<EveBasicManufacturingInfo> Requirements { get; set; }
-
-        public long Quantity { get; set; }
-    }
-
     /// <summary>
     /// Entry point class.
     /// </summary>

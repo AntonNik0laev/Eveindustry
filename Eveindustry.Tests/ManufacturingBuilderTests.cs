@@ -3,8 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Eveindustry.CLI;
-using Eveindustry.CLI.Models;
-using Eveindustry.CLI.StaticDataModels;
+using Eveindustry.Core;
+using Eveindustry.Core.Models;
+using Eveindustry.Core.StaticDataModels;
 using Eveindustry.Tests.Utils;
 using FluentAssertions;
 using Moq;
@@ -21,15 +22,15 @@ namespace Eveindustry.Tests
         [SetUp]
         public void Setup()
         {
-            ///               1
-            ///            / / | \
-            ///           2 3  4  5
-            ///          /    /\
-            ///         6    7  8
-            ///             /    \
-            ///             8     9
-            ///            /
-            ///            9
+            //               1
+            //            / / | \
+            //           2 3  4  5
+            //          /    /\
+            //         6    7  8
+            //             /    \
+            //             8     9
+            //            /
+            //            9
             var etmain = DataHelper.NewType(1, "Main"); //Root item
             var etsub2 = DataHelper.NewType(2, "Sub2"); //item in ignore list with dependencies
             var etsub3 = DataHelper.NewType(3, "Sub3"); //item in ignore list without dependencies

@@ -12,6 +12,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eveindustry.Tests", "Eveindustry.Tests\Eveindustry.Tests.csproj", "{2D843D10-18E8-4C83-BA97-E9FE416B2EBC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eveindustry.Core", "Eveindustry.Core\Eveindustry.Core.csproj", "{DC88FC73-4946-42C0-B62F-83943338FD9F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eveindustry.API", "Eveindustry.API\Eveindustry.API.csproj", "{776C63AB-86A4-40D8-8B85-3615D520BE49}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,6 +30,14 @@ Global
 		{2D843D10-18E8-4C83-BA97-E9FE416B2EBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2D843D10-18E8-4C83-BA97-E9FE416B2EBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2D843D10-18E8-4C83-BA97-E9FE416B2EBC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC88FC73-4946-42C0-B62F-83943338FD9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC88FC73-4946-42C0-B62F-83943338FD9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC88FC73-4946-42C0-B62F-83943338FD9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC88FC73-4946-42C0-B62F-83943338FD9F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{776C63AB-86A4-40D8-8B85-3615D520BE49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{776C63AB-86A4-40D8-8B85-3615D520BE49}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{776C63AB-86A4-40D8-8B85-3615D520BE49}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{776C63AB-86A4-40D8-8B85-3615D520BE49}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
