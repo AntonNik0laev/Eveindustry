@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Eveindustry.Models;
-using Eveindustry.StaticDataModels;
+using Eveindustry.CLI.Models;
+using Eveindustry.CLI.StaticDataModels;
 
 namespace Eveindustry.Tests.Utils
 {

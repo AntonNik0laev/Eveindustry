@@ -12,7 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\eveindustry\eveindustry.csproj" />
+      <ProjectReference Include="..\Eveindustry.CLI\Eveindustry.CLI.csproj" />
     </ItemGroup>
 
 </Project>

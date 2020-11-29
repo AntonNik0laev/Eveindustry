@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Eveindustry.Models;
-using Eveindustry.StaticDataModels;
+using Eveindustry.CLI;
+using Eveindustry.CLI.Models;
+using Eveindustry.CLI.StaticDataModels;
 using Eveindustry.Tests.Utils;
 using FluentAssertions;
 using FluentAssertions.Common;
