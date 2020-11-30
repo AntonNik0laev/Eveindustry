@@ -1,7 +1,7 @@
 ﻿using MessagePack;
 using YamlDotNet.Serialization;
 
-namespace Eveindustry.Core.Sde.StaticDataModels
+namespace Eveindustry.Sde.Models.Internal
 {
     /// <summary>
     /// Eve blueprint material info.
@@ -21,7 +21,7 @@ namespace Eveindustry.Core.Sde.StaticDataModels
         /// </summary>
         [YamlMember(Alias = "typeID")]
         [Key(1)]
-        public virtual int TypeId { get; set; }
+        public virtual long TypeId { get; set; }
 
         /// <summary>
         /// Gets or sets Probability.

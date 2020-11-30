@@ -1,4 +1,11 @@
-﻿$HEADER$namespace $NAMESPACE$
+﻿using Eveindustry.Core.Models.Config;
+using Eveindustry.Sde.Models.Config;
+
+namespace Eveindustry.API.Config
 {
-  public class $CLASS$ {$END$}
+    public class AppConfiguration
+    {
+        public EvePricesUdateConfiguration EvePricesUdateConfiguration { get; set; }
+        public TypeInfoLoaderOptions TypeInfoLoaderOptions { get; set; }
+    }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace Eveindustry.Core.Models
@@ -7,7 +6,7 @@ namespace Eveindustry.Core.Models
     /// <summary>
     /// Information required for manufacturing eve item.
     /// </summary>
-    public sealed class EveItemManufacturingInfo
+    public class EveItemManufacturingInfo
     {
         /// <summary>
         /// Manufacturing activity kinds - Manufacturing or Reaction.
@@ -28,7 +27,7 @@ namespace Eveindustry.Core.Models
         /// <summary>
         /// Gets or sets Eve type id.
         /// </summary>
-        public long TypeId { get; init; }
+        public long Id { get; init; }
 
         /// <summary>
         /// Gets or sets type name.
@@ -38,22 +37,22 @@ namespace Eveindustry.Core.Models
         /// <summary>
         /// Gets or sets number of items per manufacturing job run.
         /// </summary>
-        public int ItemsPerRun { get; set; }
+        public long ItemsPerRun { get; set; }
 
         /// <summary>
         /// Gets or sets item manufacturing job material requirements.
         /// </summary>
-        public List<EveManufacturingUnit> Requirements { get; set; }
+        public List<EveManufacturialQuantity> Requirements { get; set; }
 
         /// <summary>
         /// Gets or sets market sell price per item.
         /// </summary>
-        public decimal PriceSell { get; set; }
+        public decimal MarketSell { get; set; }
 
         /// <summary>
         /// Gets or sets market buy price per item.
         /// </summary>
-        public decimal PriceBuy { get; set; }
+        public decimal MarketBuy { get; set; }
 
         /// <summary>
         /// Gets or sets item adjusted price
@@ -64,20 +63,20 @@ namespace Eveindustry.Core.Models
         /// Gets adjusted price of  materials per item.
         /// </summary>
         public decimal MaterialsAdjustedPricePerItem =>
-            this.AggregateRequirements((sum, item) => sum += item.Material.AdjustedPrice * item.Quantity) /
+            this.Requirements.Sum(item => item.Material.AdjustedPrice * item.Quantity) /
             this.ItemsPerRun;
 
         /// <summary>
         /// Gets jita buy price for all required materials per single item.
         /// </summary>
         public decimal MaterialsJitaBuyPricePerItem =>
-            this.AggregateRequirements((sum, item) => sum += item.TotalJitaBuyPrice) / this.ItemsPerRun;
+            this.Requirements.Sum(item => item.TotalJitaBuyPrice) / this.ItemsPerRun;
 
         /// <summary>
         /// Gets jita sell price for all required materials per single item.
         /// </summary>
         public decimal MaterialsJitaSellPricePerItem =>
-            this.AggregateRequirements((sum, item) => sum += item.TotalJitaSellPrice) / this.ItemsPerRun;
+            this.Requirements.Sum((item) => item.TotalJitaSellPrice) / this.ItemsPerRun;
 
         /// <summary>
         /// Gets a value indicating whether item can be manufactured.
@@ -95,15 +94,12 @@ namespace Eveindustry.Core.Models
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            return this.TypeId.GetHashCode();
+            return this.Id.GetHashCode();
         }
 
         private bool Equals(EveItemManufacturingInfo other)
         {
-            return this.TypeId == other.TypeId;
+            return this.Id == other.Id;
         }
-
-        private decimal AggregateRequirements(Func<decimal, EveManufacturingUnit, decimal> aggregate) =>
-            this.Requirements.Aggregate(0, aggregate);
     }
 }

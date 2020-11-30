@@ -1,7 +1,7 @@
 ﻿using MessagePack;
 using YamlDotNet.Serialization;
 
-namespace Eveindustry.Core.Sde.StaticDataModels
+namespace Eveindustry.Sde.Models.Internal
 {
     /// <summary>
     /// Eve localized text info DTO for SDE.

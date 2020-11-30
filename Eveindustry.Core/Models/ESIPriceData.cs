@@ -23,6 +23,6 @@ namespace Eveindustry.Core.Models
         /// Gets or sets type id.
         /// </summary>
         [JsonProperty("type_id")]
-        public int TypeId { get; set; }
+        public long TypeId { get; set; }
     }
 }

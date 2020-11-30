@@ -36,7 +36,7 @@ namespace Eveindustry.Core
         /// <param name="quantity">root item quantity required. </param>
         /// <param name="ignoreTypeIds">list of ids to ignore. </param>
         /// <returns>flat list with all required items to build given item. </returns>
-        IEnumerable<EveManufacturingUnit> GetFlatManufacturingList(
+        IEnumerable<EveManufacturialQuantity> GetFlatManufacturingList(
             EveItemManufacturingInfo info,
             long quantity,
             IEnumerable<long> ignoreTypeIds = null);
@@ -45,42 +45,9 @@ namespace Eveindustry.Core
         /// Group flat list of items so that each 'level' contains elements produced on previous level.
         /// </summary>
         /// <param name="flatList">flat list of items required. </param>
+        /// <param name="ignoredTypeIds">list of ids considered as 'raw' types, so it's dependencies will not be included in stages. </param>
         /// <returns>grouped list. </returns>
-        public IEnumerable<IEnumerable<EveManufacturingUnit>> GroupIntoStages(
-            IEnumerable<EveManufacturingUnit> flatList)
-        {
-            var builtList = new List<EveItemManufacturingInfo>();
-
-            var stages = new List<List<EveManufacturingUnit>>();
-            var manufacturingList = flatList.ToList();
-            while (builtList.Count < manufacturingList.Count())
-            {
-                var stageList = new List<EveManufacturingUnit>();
-                stages.Add(stageList);
-                foreach (var item in manufacturingList)
-                {
-                    if (builtList.Contains(item.Material))
-                    {
-                        continue; // is that already built?
-                    }
-
-                    var requirementTypes = item.Material.Requirements;
-
-                    if (!requirementTypes.All(i => builtList.Contains(i.Material)))
-                    {
-                        continue; // Is all prerequisites built?
-                    }
-
-                    stageList.Add(item);
-                }
-
-                foreach (var item in stageList)
-                {
-                    builtList.Add(item.Material);
-                }
-            }
-
-            return stages;
-        }
+        IEnumerable<IEnumerable<EveManufacturialQuantity>> GroupIntoStages(
+            IEnumerable<EveManufacturialQuantity> flatList, IEnumerable<long> ignoredTypeIds);
     }
 }

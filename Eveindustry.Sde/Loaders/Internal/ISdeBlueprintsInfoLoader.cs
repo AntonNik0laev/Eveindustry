@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Eveindustry.Core.Sde.Models.Basic;
+using Eveindustry.Sde.Models.Internal;
 
-namespace Eveindustry.Core.Sde.Loaders.Basic
+namespace Eveindustry.Sde.Loaders.Internal
 {
     /// <summary>
     /// Data Loader for Eve SDE Blueprints file.

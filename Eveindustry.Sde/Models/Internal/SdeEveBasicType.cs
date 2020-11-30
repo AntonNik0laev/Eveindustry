@@ -2,7 +2,7 @@
 using MessagePack;
 using YamlDotNet.Serialization;
 
-namespace Eveindustry.Core.Sde.StaticDataModels
+namespace Eveindustry.Sde.Models.Internal
 {
     /// <summary>
     /// Eve Type info DTO for SDE.
@@ -58,7 +58,7 @@ namespace Eveindustry.Core.Sde.StaticDataModels
         /// </summary>
         [YamlMember(Alias = "groupID")]
         [Key(0)]
-        public int GroupId { get; set; }
+        public long GroupId { get; set; }
 
         /// <summary>
         /// Gets or sets Mass.

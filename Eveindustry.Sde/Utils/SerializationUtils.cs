@@ -1,14 +1,16 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using MessagePack;
+using MessagePack.Resolvers;
 using YamlDotNet.Serialization;
 
-namespace Eveindustry.Core
+namespace Eveindustry.Sde.Utils
 {
     /// <summary>
     /// Helper methods for SDE serialization/deserialization/caching.
     /// </summary>
-    public static class SerializationUtils
+    internal static class SerializationUtils
     {
         /// <summary>
         /// Read SDE data from eve YAML file. if cache file with given filename exists, read from binary cache instead.
@@ -19,17 +21,17 @@ namespace Eveindustry.Core
         /// <param name="cacheFileName">file name for binary serialization cache. </param>
         /// <typeparam name="T">type of requested data. </typeparam>
         /// <returns>requested SDE data read from yaml or binary cache. </returns>
-        public static T ReadAndCacheBinary<T>(string sdePath, string cacheFileName)
+        public static async Task<T> ReadAndCacheBinaryAsync<T>(string sdePath, string cacheFileName)
         {
             var currentDir = AppDomain.CurrentDomain.BaseDirectory;
             var fullCachePath = Path.Join(currentDir, cacheFileName);
             if (File.Exists(fullCachePath))
             {
-                return ReadFromBinary<T>(fullCachePath);
+                return await ReadFromBinary<T>(fullCachePath);
             }
 
             var result = ReadFromYaml<T>(sdePath);
-            DumpBinary(fullCachePath, result);
+            await DumpBinary(fullCachePath, result);
             return result;
         }
 
@@ -41,16 +43,17 @@ namespace Eveindustry.Core
             return yamlData;
         }
 
-        private static void DumpBinary<T>(string filePath, T obj)
+        public static async Task DumpBinary<T>(string filePath, T obj)
         {
-            var bytes = MessagePackSerializer.Serialize(obj);
-            File.WriteAllBytes(filePath, bytes);
+            await using var file = File.Create(filePath);
+            await MessagePackSerializer.SerializeAsync(file, obj, ContractlessStandardResolverAllowPrivate.Options);
+            file.Flush();
         }
 
-        private static T ReadFromBinary<T>(string filePath)
+        public static async Task<T> ReadFromBinary<T>(string filePath)
         {
-            var bytes = File.ReadAllBytes(filePath);
-            return MessagePackSerializer.Deserialize<T>(bytes);
+            await using var bytes = File.OpenRead(filePath);
+            return await MessagePackSerializer.DeserializeAsync<T>(bytes, ContractlessStandardResolverAllowPrivate.Options);
         }
     }
 }

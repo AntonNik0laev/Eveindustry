@@ -1,9 +1,9 @@
 ﻿using MessagePack;
 
-namespace Eveindustry.Core.Sde
+namespace Eveindustry.Sde.Models
 {
     [MessagePackObject]
-    internal abstract class SdeNameIdBase
+    public abstract class SdeNameIdBase
     {
         [Key(0)]
         public long Id { get; set; }

@@ -24,7 +24,7 @@ namespace Eveindustry.Core
         /// <inheritdoc />
         public ESIPriceData GetAdjustedPriceInfo(long typeId)
         {
-            return this.data[typeId];
+            return this.data.ContainsKey(typeId) ? this.data[typeId] : new ESIPriceData(){TypeId = typeId, AdjustedPrice = 0, AveragePrice = 0};
         }
 
         /// <inheritdoc />

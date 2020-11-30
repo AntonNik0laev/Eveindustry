@@ -1,6 +1,7 @@
-﻿using Eveindustry.Core.Sde.Models.Basic;
+﻿using Eveindustry.Sde.Models.Config;
+using Eveindustry.Sde.Models.Internal;
 
-namespace Eveindustry.Core.Sde.Loaders.Basic
+namespace Eveindustry.Sde.Loaders.Internal
 {
     /// <inheritdoc cref="ISdeBlueprintsInfoLoader"/>x
     internal class SdeBlueprintsInfoLoader : EveSdeLoaderBase<SdeBlueprintInfo>, ISdeBlueprintsInfoLoader
@@ -9,8 +10,8 @@ namespace Eveindustry.Core.Sde.Loaders.Basic
         /// Initializes a new instance of the <see cref="SdeBlueprintsInfoLoader"/> class.
         /// </summary>
         /// <param name="sdeRoot">path to Eve Static Data Export files (SDE). </param>
-        public SdeBlueprintsInfoLoader(string sdeRoot)
-            : base(sdeRoot)
+        public SdeBlueprintsInfoLoader(TypeInfoLoaderOptions options)
+            : base(options.SdeBasePath)
         {
         }
 

@@ -28,22 +28,22 @@
         /// <summary>
         /// Gets total jita buy price multiplied by quantity.
         /// </summary>
-        public decimal TotalJitaBuyPrice => this.Material.PriceBuy * this.Quantity;
+        public decimal TotalJitaBuyPrice => this.Material.MarketBuy * this.Quantity;
 
         /// <summary>
         /// Gets total jita sell price multiplied by quantity.
         /// </summary>
-        public decimal TotalJitaSellPrice => this.Material.PriceSell * this.Quantity;
+        public decimal TotalJitaSellPrice => this.Material.MarketSell * this.Quantity;
 
         /// <summary>
         /// Gets jita buy for remaining items
         /// </summary>
-        public decimal RemainingJitaBuyPrice => this.Material.PriceBuy * this.RemainingQuantity;
+        public decimal RemainingJitaBuyPrice => this.Material.MarketBuy * this.RemainingQuantity;
 
         /// <summary>
         /// Gets jita sell for remaining items
         /// </summary>
-        public decimal RemainingJitaSellPrice => this.Material.PriceSell * this.RemainingQuantity;
+        public decimal RemainingJitaSellPrice => this.Material.MarketSell * this.RemainingQuantity;
 
         /// <summary>
         /// Gets total jita buy price for required materials

@@ -3,10 +3,16 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using AutoMapper;
 using Eveindustry.Core;
 using Eveindustry.Core.Models;
 using Eveindustry.Core.Models.Config;
-using Eveindustry.Core.StaticDataModels;
+using Eveindustry.Sde;
+using Eveindustry.Sde.Models;
+using Eveindustry.Sde.Models.Config;
+using Eveindustry.Sde.Repositories;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Eveindustry.CLI
 {
@@ -16,8 +22,6 @@ namespace Eveindustry.CLI
     internal static class Program
     {
         private const string SdeGlobalPath = "D:\\data\\sde\\";
-        private static BlueprintsInfoRepository bpRepository;
-        private static EveTypeInfoRepository typeRepository;
 
         /// <summary>
         /// Entry point.
@@ -25,27 +29,36 @@ namespace Eveindustry.CLI
         /// <param name="args">program command line args. </param>
         public static void Main(string[] args)
         {
-            Program.bpRepository = new BlueprintsInfoRepository(new BlueprintsInfoLoader(SdeGlobalPath));
-            Program.typeRepository = new EveTypeInfoRepository(new TypeInfoLoader(new TypeInfoLoaderOptions(){SdeBasePath = SdeGlobalPath}));
-            var hulk = typeRepository.FindByExactName(args[0]);
+            var sdeLoader1 = new SdeDataLoader(Options.Create<TypeInfoLoaderOptions>(new TypeInfoLoaderOptions() {SdeBasePath = SdeGlobalPath}));
+            var sdeRepository = new SdeDataRepository(sdeLoader1);
+            sdeRepository.Init();
+            var allSde = sdeLoader1.Load().Result;
+            var hulk = allSde.FirstOrDefault(i => i.Value.Name == args[0]);
 
             var terminationTypes = new List<long> {4051, 4246, 4247, 4312, 17476};
             var quantity = int.Parse(args[1]);
-            Console.WriteLine("========================================================");
-            Console.WriteLine("TOTAL LIST");
             Console.WriteLine();
 
-            var totalTypesList = TraverseManufacturingTree(hulk.Id);
+            var totalTypesList = TraverseManufacturingTree(hulk.Key, allSde);
+            var loggerFactory = LoggerFactory.Create(c => c.AddConsole());
+            var logger = loggerFactory.CreateLogger<EvePricesRepository>();
             var evePriceRepository =
-                new EvePricesRepository(new ListTypeIdsSource(totalTypesList), new EvePricesUdateConfiguration());
+                new EvePricesRepository(new ListTypeIdsSource(totalTypesList), Options.Create(new EvePricesUdateConfiguration()), logger);
             var esiPricesRepository = new EsiPricesRepository();
 
             evePriceRepository.Init().Wait();
             esiPricesRepository.Init().Wait();
-
+            Console.WriteLine("========================================================");
+            Console.WriteLine("TOTAL MANUFACTURING LIST");
+            var mapConfiguration = new MapperConfiguration(c => c
+                .AddProfiles(new Profile[]
+                    {new EveTypeMappingProfile(), new EveItemManufacturingInfoMappingProfile()}));
+            var mapper = mapConfiguration.CreateMapper();
+            var eveTypeRepo = new EveTypeRepository(mapper, sdeRepository, esiPricesRepository, new Lazy<IEvePricesRepository>(evePriceRepository));
+            eveTypeRepo.Init().Wait();
             var manufacturingBuilder =
-                new ManufacturingInfoBuilder(typeRepository, bpRepository, evePriceRepository, esiPricesRepository);
-            var infoTree = manufacturingBuilder.BuildInfo(hulk.Id);
+                new ManufacturingInfoBuilder(mapper, eveTypeRepo);
+            var infoTree = manufacturingBuilder.BuildInfo(hulk.Key);
             var flat = manufacturingBuilder.GetFlatManufacturingList(infoTree, quantity, terminationTypes);
             var grouped = manufacturingBuilder.GroupIntoStages(flat, terminationTypes);
 
@@ -55,36 +68,30 @@ namespace Eveindustry.CLI
         }
 
         private static List<long> TraverseManufacturingTree(
-            long typeId)
+            long requestedTypeId, IReadOnlyDictionary<long, SdeType> allSde)
         {
             var totalList = new List<long>();
 
             void AddToListRecursive(long typeId)
             {
+                var currentItem = allSde[typeId];
                 if (!totalList.Contains(typeId))
                 {
                     totalList.Add(typeId);
                 }
 
-                var bp = bpRepository.FindByProductId(typeId);
-
-                var activity = bp?.Activities?.Manufacturing ?? bp?.Activities?.Reaction;
-
-                var requiredMaterials = activity?.Materials ?? new Material[0];
-
-                foreach (var material in requiredMaterials)
+                foreach (var material in currentItem.Blueprint?.MaterialRequirements ?? new List<SdeMaterialRequirement>())
                 {
-                    var matInfo = typeRepository.GetById(material.TypeId);
-                    AddToListRecursive(matInfo.Id);
+                    AddToListRecursive(material.MaterialId);
                 }
             }
 
-            AddToListRecursive(typeId);
+            AddToListRecursive(requestedTypeId);
 
             return totalList;
         }
 
-        private static void PrintStagesDetails(IEnumerable<IEnumerable<EveManufacturingUnit>> items)
+        private static void PrintStagesDetails(IEnumerable<IEnumerable<EveManufacturialQuantity>> items)
         {
             decimal systemCost = 0.05M;
 
@@ -104,7 +111,7 @@ namespace Eveindustry.CLI
                     "Remain"); // 7
             }
 
-            void PrintDetails(EveManufacturingUnit unit)
+            void PrintDetails(EveManufacturialQuantity unit)
             {
                 var details = string.Format(
                     formatString,
@@ -119,7 +126,7 @@ namespace Eveindustry.CLI
                 Console.WriteLine(details);
             }
 
-            void PrintTotal(IEnumerable<EveManufacturingUnit> stage)
+            void PrintTotal(IEnumerable<EveManufacturialQuantity> stage)
             {
                 var details = string.Format(
                     formatString,
@@ -150,13 +157,14 @@ namespace Eveindustry.CLI
 
             Console.WriteLine("Remaining items: ");
             var formatStringRemaining = "{0,35}|{1,15:N0}|{2, 15:N0}|{3, 15:N0}";
-            var itemsFlat = items.
-                SelectMany(i => i).
-                OrderByDescending(i => i.RemainingJitaSellPrice).
-                ToList();
+            var itemsFlat = items.SelectMany(i => i).OrderByDescending(i => i.RemainingJitaSellPrice).ToList();
             foreach (var item in itemsFlat)
             {
-                if(item.RemainingQuantity == 0) {continue;}
+                if (item.RemainingQuantity == 0)
+                {
+                    continue;
+                }
+
                 var formatted = string.Format(
                     formatStringRemaining,
                     item.Material.Name,

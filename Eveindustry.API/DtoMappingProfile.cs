@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Eveindustry.API.DTO.EveTypeSearch;
 using Eveindustry.Core.Models;
-using Eveindustry.Core.StaticDataModels;
 
 namespace Eveindustry.API
 {
@@ -9,9 +8,7 @@ namespace Eveindustry.API
     {
         public DtoMappingProfile()
         {
-            CreateMap<EveType, EveTypeSearchInfo>()
-                .ForMember(i => i.EveTypeId, expression => expression.MapFrom(s => s.Id))
-                .ForMember(i => i.EveTypeName, expression => expression.MapFrom(i => i.Name.En));
+            CreateMap<EveType, EveTypeSearchInfo>();
             CreateMap<EveTypeSearchOptions, FindByPartialNameOptions>();
         }
     }

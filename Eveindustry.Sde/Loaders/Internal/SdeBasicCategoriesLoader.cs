@@ -1,8 +1,7 @@
-﻿using System.Collections;
-using Eveindustry.Sde.Models.Config;
+﻿using Eveindustry.Sde.Models.Config;
 using Eveindustry.Sde.Models.Internal;
 
-namespace Eveindustry.Sde.Loaders.Internal.Basic
+namespace Eveindustry.Sde.Loaders.Internal
 {
     internal class SdeBasicCategoriesLoader : EveSdeLoaderBase<SdeBasicCategory>, ISdeBasicCategoriesLoader
     {

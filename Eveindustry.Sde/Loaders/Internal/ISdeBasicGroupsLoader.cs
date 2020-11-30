@@ -1,8 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Eveindustry.Sde.Models.Internal;
 
-namespace Eveindustry.Sde.Loaders.Internal.Basic
+namespace Eveindustry.Sde.Loaders.Internal
 {
     internal interface ISdeBasicGroupsLoader: IDataLoader<SortedList<long, SdeBasicGroup>> { }
 }

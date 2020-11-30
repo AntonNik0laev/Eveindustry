@@ -7,7 +7,7 @@ namespace Eveindustry.Sde.Repositories
     public interface ISdeDataRepository
     {
         Task Init();
-        IDictionary<long, SdeType> GetAll();
+        SortedList<long, SdeType> GetAll();
         IEnumerable<SdeType> GetAllTradeable();
     }
 }

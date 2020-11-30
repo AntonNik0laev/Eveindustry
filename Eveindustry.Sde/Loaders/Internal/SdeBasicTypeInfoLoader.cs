@@ -1,8 +1,7 @@
-﻿using Eveindustry.Core.Sde.Loaders.Basic;
-using Eveindustry.Core.Sde.Models.Basic;
-using Eveindustry.Core.Sde.StaticDataModels;
+﻿using Eveindustry.Sde.Models.Config;
+using Eveindustry.Sde.Models.Internal;
 
-namespace Eveindustry.Core.Sde.Loaders
+namespace Eveindustry.Sde.Loaders.Internal
 {
     /// <inheritdoc cref="ISdeBasicTypeInfoLoader"/>
     internal class SdeBasicTypeInfoLoader : EveSdeLoaderBase<SdeEveBasicType>, ISdeBasicTypeInfoLoader

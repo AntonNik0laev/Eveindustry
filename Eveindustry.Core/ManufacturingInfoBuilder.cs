@@ -1,36 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using AutoMapper;
 using Eveindustry.Core.Models;
-using Eveindustry.Core.StaticDataModels;
 
 namespace Eveindustry.Core
 {
     /// <inheritdoc />
     public class ManufacturingInfoBuilder : IManufacturingInfoBuilder
     {
-        private readonly IEveTypeInfoRepository typeInfoRepository;
-        private readonly IBlueprintsInfoRepository bpRepository;
-        private readonly IEvePricesRepository pricesRepository;
-        private readonly IEsiPricesRepository esiPricesRepository;
+        private readonly IEveTypeRepository typeRepository;
+        private readonly IMapper mapper;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ManufacturingInfoBuilder"/> class.
         /// </summary>
-        /// <param name="typeInfoRepository">type info repository. </param>
-        /// <param name="bpRepository">blueprints repository. </param>
-        /// <param name="pricesRepository">prices repository. </param>
-        /// <param name="esiPricesRepository">ESI adjusted/average prices repository. </param>
-        public ManufacturingInfoBuilder(
-            IEveTypeInfoRepository typeInfoRepository,
-            IBlueprintsInfoRepository bpRepository,
-            IEvePricesRepository pricesRepository,
-            IEsiPricesRepository esiPricesRepository)
+        public ManufacturingInfoBuilder(IMapper mapper, IEveTypeRepository typeRepository)
         {
-            this.typeInfoRepository = typeInfoRepository;
-            this.bpRepository = bpRepository;
-            this.pricesRepository = pricesRepository;
-            this.esiPricesRepository = esiPricesRepository;
+            this.typeRepository = typeRepository;
+            this.mapper = mapper;
         }
 
         /// <inheritdoc />
@@ -53,21 +41,21 @@ namespace Eveindustry.Core
         }
 
         /// <inheritdoc />
-        public IEnumerable<EveManufacturingUnit> GetFlatManufacturingList(
+        public IEnumerable<EveManufacturialQuantity> GetFlatManufacturingList(
             EveItemManufacturingInfo info,
             long quantity,
             IEnumerable<long> ignoreTypeIds)
         {
-            var totalList = new SortedList<long, EveManufacturingUnit>();
+            var totalList = new SortedList<long, EveManufacturialQuantity>();
             var typeIds = ignoreTypeIds.ToList();
 
-            void BuildFlatListRecursive(EveManufacturingUnit currentItem)
+            void BuildFlatListRecursive(EveManufacturialQuantity currentItem)
             {
                 var currentMaterial = currentItem.Material;
 
-                if (!totalList.ContainsKey(currentItem.Material.TypeId))
+                if (!totalList.ContainsKey(currentItem.Material.Id))
                 {
-                    totalList.Add(currentItem.Material.TypeId, new EveManufacturingUnit()
+                    totalList.Add(currentItem.Material.Id, new EveManufacturialQuantity()
                     {
                         Material = currentMaterial,
                         Quantity = 0,
@@ -78,15 +66,15 @@ namespace Eveindustry.Core
                     this.GetNumbetOfRunsAndQuantity(
                         currentMaterial.ItemsPerRun,
                         currentItem.Quantity,
-                        totalList[currentMaterial.TypeId].RemainingQuantity);
+                        totalList[currentMaterial.Id].RemainingQuantity);
                 if (!currentMaterial.CanBeManufactured)
                 {
                     correctedQuantity = currentItem.Quantity;
                 }
 
-                totalList[currentMaterial.TypeId].Quantity += correctedQuantity;
-                totalList[currentMaterial.TypeId].RemainingQuantity = remainingQuantity;
-                if (typeIds.Any(i => i == currentItem.Material.TypeId))
+                totalList[currentMaterial.Id].Quantity += correctedQuantity;
+                totalList[currentMaterial.Id].RemainingQuantity = remainingQuantity;
+                if (typeIds.Any(i => i == currentItem.Material.Id))
                 {
                     return;
                 }
@@ -99,7 +87,7 @@ namespace Eveindustry.Core
                 foreach (var material in currentMaterial.Requirements)
                 {
                     var requiredQuantity = material.Quantity * numberOfRuns;
-                    BuildFlatListRecursive(new EveManufacturingUnit()
+                    BuildFlatListRecursive(new EveManufacturialQuantity()
                     {
                         Material = material.Material,
                         Quantity = requiredQuantity,
@@ -107,38 +95,38 @@ namespace Eveindustry.Core
                 }
             }
 
-            BuildFlatListRecursive(new EveManufacturingUnit {Material = info, Quantity = quantity });
+            BuildFlatListRecursive(new EveManufacturialQuantity {Material = info, Quantity = quantity });
             return totalList.Values;
         }
 
         /// <inheritdoc />
-        public IEnumerable<IEnumerable<EveManufacturingUnit>> GroupIntoStages(
-            IEnumerable<EveManufacturingUnit> flatList, IEnumerable<long> ignoredTypeIds)
+        public IEnumerable<IEnumerable<EveManufacturialQuantity>> GroupIntoStages(
+            IEnumerable<EveManufacturialQuantity> flatList, IEnumerable<long> ignoredTypeIds)
         {
             var builtList = new List<long>();
             
-            var stages = new List<List<EveManufacturingUnit>>();
+            var stages = new List<List<EveManufacturialQuantity>>();
             var eveManufacturingUnits = flatList.ToList();
 
             while (builtList.Count < eveManufacturingUnits.Count)
             {
-                var stageList = new List<EveManufacturingUnit>();
+                var stageList = new List<EveManufacturialQuantity>();
                 stages.Add(stageList);
                 foreach (var item in eveManufacturingUnits)
                 {
-                    if (builtList.Contains(item.Material.TypeId))
+                    if (builtList.Contains(item.Material.Id))
                     {
                         continue; // is that already built?
                     }
 
                     var requirementTypes = item.Material.Requirements;
-                    if (ignoredTypeIds.Contains(item.Material.TypeId))
+                    if (ignoredTypeIds.Contains(item.Material.Id))
                     {
                         stageList.Add(item);
                         continue;
                     }
 
-                    if (!requirementTypes.All(i => builtList.Contains(i.Material.TypeId)))
+                    if (!requirementTypes.All(i => builtList.Contains(i.Material.Id)))
                     {
                         continue; // Is all prerequisites built?
                     }
@@ -148,7 +136,7 @@ namespace Eveindustry.Core
 
                 foreach (var item in stageList)
                 {
-                    builtList.Add(item.Material.TypeId);
+                    builtList.Add(item.Material.Id);
                 }
             }
 
@@ -159,37 +147,24 @@ namespace Eveindustry.Core
             long id,
             SortedList<long, EveItemManufacturingInfo> allResults)
         {
-            var adjustedPrice = this.esiPricesRepository.GetAdjustedPriceInfo(id);
-            var jitaPrices = this.pricesRepository.GetPriceInfo(id);
-            var eveTypeInfo = this.typeInfoRepository.GetById(id);
-            var bpItem = this.bpRepository.FindByProductId(id);
+            var eveTypeInfo = this.typeRepository.GetById(id);
 
-            var activity = bpItem?.Activities?.Manufacturing ?? bpItem?.Activities?.Reaction;
-            var dependencies = activity?.Materials ?? new Material[0];
-            var itemsPerRun = activity?.Products?[0]?.Quantity ?? 1;
+            var dependencies = eveTypeInfo.Blueprint?.Materials ?? new List<EveMaterialRequirement>();
+            var itemsPerRun = eveTypeInfo.Blueprint?.ItemsPerRun;
 
-            var manufacturingInfo = new EveItemManufacturingInfo()
-            {
-                Name = eveTypeInfo.Name.En,
-                Requirements = new List<EveManufacturingUnit>(),
-                AdjustedPrice = adjustedPrice.AdjustedPrice,
-                PriceBuy = jitaPrices.JitaBuy,
-                PriceSell = jitaPrices.JitaSell,
-                TypeId = id,
-                ItemsPerRun = itemsPerRun,
-            };
-
+            var manufacturingInfo = mapper.Map<EveType, EveItemManufacturingInfo>(eveTypeInfo);
             if (!allResults.ContainsKey(id))
             {
                 allResults.Add(id, manufacturingInfo);
             }
 
+            manufacturingInfo.Requirements = new List<EveManufacturialQuantity>();
             foreach (var dependency in dependencies)
             {
-                var dependencyInfo = allResults.ContainsKey(dependency.TypeId)
-                    ? allResults[dependency.TypeId]
-                    : this.BuildInfoRecursive(dependency.TypeId, allResults);
-                manufacturingInfo.Requirements.Add(new EveManufacturingUnit()
+                var dependencyInfo = allResults.ContainsKey(dependency.MaterialId)
+                    ? allResults[dependency.MaterialId]
+                    : this.BuildInfoRecursive(dependency.MaterialId, allResults);
+                manufacturingInfo.Requirements.Add(new EveManufacturialQuantity()
                 {
                     Quantity = dependency.Quantity,
                     Material = dependencyInfo,
@@ -199,7 +174,7 @@ namespace Eveindustry.Core
             return manufacturingInfo;
         }
 
-        private (long NumberOfRuns, long Quantity, long RemainingQuantity) GetNumbetOfRunsAndQuantity(int itemsPerRun,
+        private (long NumberOfRuns, long Quantity, long RemainingQuantity) GetNumbetOfRunsAndQuantity(long itemsPerRun,
             long requiredQuantity, long remainingQuantity)
         {
             var discountedRequiredQuantity = requiredQuantity - remainingQuantity;

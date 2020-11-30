@@ -1,8 +1,7 @@
-﻿using Eveindustry.Core.Sde.Models.Basic;
-using MessagePack;
+﻿using MessagePack;
 using YamlDotNet.Serialization;
 
-namespace Eveindustry.Core.Sde.StaticDataModels
+namespace Eveindustry.Sde.Models.Internal
 {
     /// <summary>
     /// Blueprint info DTO for SDE.

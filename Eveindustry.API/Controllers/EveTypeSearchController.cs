@@ -14,9 +14,9 @@ namespace Eveindustry.API.Controllers
     public class EveTypeSearchController : Controller
     {
         private readonly IMapper mapper;
-        private readonly IEveTypeInfoRepository repository;
+        private readonly IEveTypeRepository repository;
 
-        public EveTypeSearchController(IMapper mapper, IEveTypeInfoRepository repository)
+        public EveTypeSearchController(IMapper mapper, IEveTypeRepository repository)
         {
             this.mapper = mapper;
             this.repository = repository;

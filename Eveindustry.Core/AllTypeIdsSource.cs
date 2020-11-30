@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Eveindustry.Sde.Repositories;
 
 namespace Eveindustry.Core
 {
@@ -8,13 +9,13 @@ namespace Eveindustry.Core
     /// </summary>
     public class AllTypeIdsSource : ITypeIdsSource
     {
-        private readonly IEveTypeInfoRepository repository;
+        private readonly ISdeDataRepository repository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AllTypeIdsSource"/> class.
         /// </summary>
         /// <param name="repository">eve types repository to get all information about existed types. </param>
-        public AllTypeIdsSource(IEveTypeInfoRepository repository)
+        public AllTypeIdsSource(ISdeDataRepository repository)
         {
             this.repository = repository;
         }
@@ -22,7 +23,7 @@ namespace Eveindustry.Core
         /// <inheritdoc/>
         public IEnumerable<long> GetTypeIds()
         {
-            return this.repository.GetAll().Select(i => i.Id);
+            return this.repository.GetAll().Values.Where(i => i.MarketGroupId != 0).Select(i => i.Id);
         }
     }
 }

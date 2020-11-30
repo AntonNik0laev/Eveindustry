@@ -1,4 +1,4 @@
-﻿namespace Eveindustry.Core.Models.Config
+﻿namespace Eveindustry.Sde.Models.Config
 {
     /// <summary>
     /// Type info loader options

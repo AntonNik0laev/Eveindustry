@@ -1,12 +1,12 @@
 ﻿using MessagePack;
 
-namespace Eveindustry.Core.Sde
+namespace Eveindustry.Sde.Models
 {
     [MessagePackObject]
-    internal class SdeMaterialRequirement
+    public class SdeMaterialRequirement
     {
         [Key(0)]
-        public SdeType SdeType { get; set; }
+        public long MaterialId { get; set; }
         [Key(1)]
         public long Quantity { get; set; }
     }

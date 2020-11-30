@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.IO;
-using Eveindustry.Core.Sde.Utils;
+using System.Threading.Tasks;
+using Eveindustry.Sde.Utils;
 
-namespace Eveindustry.Core.Sde.Loaders.Basic
+namespace Eveindustry.Sde.Loaders.Internal
 {
     /// <summary>
     /// Base class to load eve Static data (SDE).
@@ -11,16 +13,16 @@ namespace Eveindustry.Core.Sde.Loaders.Basic
     /// <typeparam name="TData">type of item details. </typeparam>
     internal abstract class EveSdeLoaderBase<TData> : IDataLoader<SortedList<long, TData>>
     {
-        private readonly string sdeBasePath;
-        private SortedList<long, TData> data;
+        private readonly string options;
+        private SortedList<long, TData> items;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EveSdeLoaderBase{TData}"/> class.
         /// </summary>
-        /// <param name="sdeBasePath">path to eve static data export (SDE) root directory. </param>
-        protected EveSdeLoaderBase(string sdeBasePath)
+        /// <param name="options">path to eve static data export (SDE) root directory. </param>
+        protected EveSdeLoaderBase(string options)
         {
-            this.sdeBasePath = sdeBasePath;
+            this.options = options;
         }
 
         /// <summary>
@@ -34,20 +36,13 @@ namespace Eveindustry.Core.Sde.Loaders.Basic
         /// </summary>
         protected abstract string CacheFilename { get; }
 
-        private string SdeFileFullPath => Path.Join(this.sdeBasePath, this.SdeFileRelativePath);
+        private string SdeFileFullPath => Path.Join(this.options, this.SdeFileRelativePath);
 
         /// <inheritdoc/>
-        public SortedList<long, TData> Load()
+        public async Task<SortedList<long, TData>> Load()
         {
-            if (this.data != null)
-            {
-                return this.data;
-            }
-
-            this.data = SerializationUtils
-                .ReadAndCacheBinary<SortedList<long, TData>>(this.SdeFileFullPath, this.CacheFilename);
-
-            return this.data;
+            return this.items ??= await SerializationUtils
+                .ReadAndCacheBinaryAsync<SortedList<long, TData>>(this.SdeFileFullPath, this.CacheFilename);
         }
     }
 }
