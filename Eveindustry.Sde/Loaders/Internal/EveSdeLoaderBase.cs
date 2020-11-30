@@ -14,7 +14,6 @@ namespace Eveindustry.Sde.Loaders.Internal
     internal abstract class EveSdeLoaderBase<TData> : IDataLoader<SortedList<long, TData>>
     {
         private readonly string options;
-        private SortedList<long, TData> items;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EveSdeLoaderBase{TData}"/> class.
@@ -41,7 +40,7 @@ namespace Eveindustry.Sde.Loaders.Internal
         /// <inheritdoc/>
         public async Task<SortedList<long, TData>> Load()
         {
-            return this.items ??= await SerializationUtils
+            return await SerializationUtils
                 .ReadAndCacheBinaryAsync<SortedList<long, TData>>(this.SdeFileFullPath, this.CacheFilename);
         }
     }

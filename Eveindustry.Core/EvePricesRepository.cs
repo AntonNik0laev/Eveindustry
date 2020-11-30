@@ -79,7 +79,7 @@ namespace Eveindustry.Core
             var minCreatedTime = DateTime.UtcNow.Add(-this.updateInterval);
             if(createdDate < minCreatedTime)
             {
-                this.logger.LogInformation("Found binary cache file, but created date is less then configured minimum . created: {{createdDate}}. min: {minCreatedTime}", createdDate, minCreatedTime);
+                this.logger.LogInformation("Found binary cache file, but created date is less then configured minimum . created: {createdDate}. min: {minCreatedTime}", createdDate, minCreatedTime);
                 return;
             };
             this.logger.LogInformation("Starting to read prices from cache");

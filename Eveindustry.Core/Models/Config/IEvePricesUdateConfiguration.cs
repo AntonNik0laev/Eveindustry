@@ -8,6 +8,6 @@
         /// <summary>
         /// Eve prices update interval.
         /// </summary>
-        public long UpdateIntervalMinutes { get; } = 60;
+        public long UpdateIntervalMinutes { get; set; } 
     }
 }

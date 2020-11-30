@@ -16,6 +16,7 @@
       <PackageReference Include="AutoMapper" Version="10.1.1" />
       <PackageReference Include="MessagePack" Version="2.2.60" />
       <PackageReference Include="MessagePack.Annotations" Version="2.2.60" />
+      <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
       <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
       <PackageReference Include="RestSharp" Version="106.11.7" />

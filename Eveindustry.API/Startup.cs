@@ -5,6 +5,7 @@ using AutoMapper;
 using Eveindustry.API.Config;
 using Eveindustry.Core;
 using Eveindustry.Core.Models;
+using Eveindustry.Core.Models.Config;
 using Eveindustry.Sde;
 using Eveindustry.Sde.Models.Config;
 using Eveindustry.Sde.Repositories;
@@ -32,7 +33,9 @@ namespace Eveindustry.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddOptions();
+            services.AddOptions<AppConfiguration>();
+            services.AddOptions<TypeInfoLoaderOptions>().Bind(Configuration.GetSection(nameof(AppConfiguration.TypeInfoLoaderOptions)));
+            services.AddOptions<EvePricesUdateConfiguration>().Bind(Configuration.GetSection(nameof(AppConfiguration.EvePricesUdateConfiguration)));
             services.AddControllers().AddJsonOptions(opt =>
             {
                 opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
@@ -50,6 +53,7 @@ namespace Eveindustry.API
             services.AddSingleton<IEveTypeRepository, EveTypeRepository>();
             
             services.AddAutoMapper(typeof(Startup).Assembly, typeof(EveType).Assembly);
+            services.AddHttpClient();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -76,13 +80,13 @@ namespace Eveindustry.API
 
         public void InitializeServices()
         {
-            var logger = Container.Resolve<ILogger<Startup>>();
-            logger.LogInformation("Starting to initialize repositories");
-            logger.LogInformation("Begin initialize ISdeDataRepository");
-            Container.Resolve<ISdeDataRepository>().Init().Wait();
-            logger.LogInformation("End initialize ISdeDataRepository");
-            logger.LogInformation("Begin initialize IEsiPricesRepository");
-            Container.Resolve<IEsiPricesRepository>().Init().Wait();
+             var logger = Container.Resolve<ILogger<Startup>>();
+             logger.LogInformation("Starting to initialize repositories");
+             logger.LogInformation("Begin initialize ISdeDataRepository");
+             Container.Resolve<ISdeDataRepository>().Init().Wait();
+             logger.LogInformation("End initialize ISdeDataRepository");
+             logger.LogInformation("Begin initialize IEsiPricesRepository");
+             Container.Resolve<IEsiPricesRepository>().Init().Wait();
             logger.LogInformation("End initialize IEsiPricesRepository");
             logger.LogInformation("Begin initialize IEvePricesRepository");
             Container.Resolve<IEvePricesRepository>().Init().Wait();

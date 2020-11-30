@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using AutoMapper;
 using Eveindustry.Core;
 using Eveindustry.Core.Models;
@@ -11,6 +14,8 @@ using Eveindustry.Sde;
 using Eveindustry.Sde.Models;
 using Eveindustry.Sde.Models.Config;
 using Eveindustry.Sde.Repositories;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -19,7 +24,7 @@ namespace Eveindustry.CLI
     /// <summary>
     /// Entry point class.
     /// </summary>
-    internal static class Program
+    internal class Program
     {
         private const string SdeGlobalPath = "D:\\data\\sde\\";
 
@@ -29,36 +34,19 @@ namespace Eveindustry.CLI
         /// <param name="args">program command line args. </param>
         public static void Main(string[] args)
         {
-            var sdeLoader1 = new SdeDataLoader(Options.Create<TypeInfoLoaderOptions>(new TypeInfoLoaderOptions() {SdeBasePath = SdeGlobalPath}));
-            var sdeRepository = new SdeDataRepository(sdeLoader1);
-            sdeRepository.Init();
-            var allSde = sdeLoader1.Load().Result;
-            var hulk = allSde.FirstOrDefault(i => i.Value.Name == args[0]);
-
             var terminationTypes = new List<long> {4051, 4246, 4247, 4312, 17476};
+            var name = args[0];
             var quantity = int.Parse(args[1]);
             Console.WriteLine();
-
-            var totalTypesList = TraverseManufacturingTree(hulk.Key, allSde);
-            var loggerFactory = LoggerFactory.Create(c => c.AddConsole());
-            var logger = loggerFactory.CreateLogger<EvePricesRepository>();
-            var evePriceRepository =
-                new EvePricesRepository(new ListTypeIdsSource(totalTypesList), Options.Create(new EvePricesUdateConfiguration()), logger);
-            var esiPricesRepository = new EsiPricesRepository();
-
-            evePriceRepository.Init().Wait();
-            esiPricesRepository.Init().Wait();
+            
             Console.WriteLine("========================================================");
             Console.WriteLine("TOTAL MANUFACTURING LIST");
-            var mapConfiguration = new MapperConfiguration(c => c
-                .AddProfiles(new Profile[]
-                    {new EveTypeMappingProfile(), new EveItemManufacturingInfoMappingProfile()}));
-            var mapper = mapConfiguration.CreateMapper();
-            var eveTypeRepo = new EveTypeRepository(mapper, sdeRepository, esiPricesRepository, new Lazy<IEvePricesRepository>(evePriceRepository));
-            eveTypeRepo.Init().Wait();
-            var manufacturingBuilder =
-                new ManufacturingInfoBuilder(mapper, eveTypeRepo);
-            var infoTree = manufacturingBuilder.BuildInfo(hulk.Key);
+
+            var container = RegisterServices();
+            var manufacturingBuilder = container.Resolve<IManufacturingInfoBuilder>();
+            var etRepository = container.Resolve<IEveTypeRepository>();
+            var itemToBuild = etRepository.GetByExactName(name);
+            var infoTree = manufacturingBuilder.BuildInfo(itemToBuild.Id);
             var flat = manufacturingBuilder.GetFlatManufacturingList(infoTree, quantity, terminationTypes);
             var grouped = manufacturingBuilder.GroupIntoStages(flat, terminationTypes);
 
@@ -67,28 +55,51 @@ namespace Eveindustry.CLI
             Console.ReadKey();
         }
 
-        private static List<long> TraverseManufacturingTree(
-            long requestedTypeId, IReadOnlyDictionary<long, SdeType> allSde)
+        private static ILifetimeScope RegisterServices()
         {
-            var totalList = new List<long>();
-
-            void AddToListRecursive(long typeId)
+            
+            var configBuilder = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>()
             {
-                var currentItem = allSde[typeId];
-                if (!totalList.Contains(typeId))
-                {
-                    totalList.Add(typeId);
-                }
+                {"TypeInfoLoaderOptions:SdeBasePath", "d:/data/sde"},
+                {"EvePricesUdateConfiguration:UpdateIntervalMinutes", "1440"}
+            });
+            var spFactory = new AutofacServiceProviderFactory();
+            var Configuration = configBuilder.Build();
 
-                foreach (var material in currentItem.Blueprint?.MaterialRequirements ?? new List<SdeMaterialRequirement>())
-                {
-                    AddToListRecursive(material.MaterialId);
-                }
-            }
+            var services = new ServiceCollection();
+            services.AddOptions<TypeInfoLoaderOptions>().Bind(Configuration.GetSection(nameof(TypeInfoLoaderOptions)));
+            services.AddOptions<EvePricesUdateConfiguration>().Bind(Configuration.GetSection(nameof(EvePricesUdateConfiguration)));
 
-            AddToListRecursive(requestedTypeId);
+            services.AddSingleton<ISdeDataRepository, SdeDataRepository>();
+            services.AddSingleton<ISdeDataLoader, SdeDataLoader>();
+            services.AddSingleton<IEsiPricesRepository, EsiPricesRepository>();
+            services.AddSingleton<IEvePricesRepository, EvePricesRepository>();
+            services.AddSingleton<ITypeIdsSource, AllTypeIdsSource>();
 
-            return totalList;
+            services.AddSingleton<IEveTypeRepository, EveTypeRepository>();
+            services.AddScoped<IManufacturingInfoBuilder, ManufacturingInfoBuilder>();
+            services.AddAutoMapper(typeof(EveType).Assembly);
+            services.AddHttpClient();
+            services.AddLogging(c => c.AddConsole());
+            
+            var sp = spFactory.CreateServiceProvider(spFactory.CreateBuilder(services));
+            var container = sp.GetAutofacRoot();
+            
+            var logger = container.Resolve<ILogger<Program>>();
+            logger.LogInformation("Starting to initialize repositories");
+            logger.LogInformation("Begin initialize ISdeDataRepository");
+            container.Resolve<ISdeDataRepository>().Init().Wait();
+            logger.LogInformation("End initialize ISdeDataRepository");
+            logger.LogInformation("Begin initialize IEsiPricesRepository");
+            container.Resolve<IEsiPricesRepository>().Init().Wait();
+            logger.LogInformation("End initialize IEsiPricesRepository");
+            logger.LogInformation("Begin initialize IEvePricesRepository");
+            container.Resolve<IEvePricesRepository>().Init().Wait();
+            logger.LogInformation("End initialize IEvePricesRepository");
+            logger.LogInformation("Begin initialize IEveTypeRepository");
+            container.Resolve<IEveTypeRepository>().Init().Wait();
+            logger.LogInformation("End initialize IEveTypeRepository");
+            return container;
         }
 
         private static void PrintStagesDetails(IEnumerable<IEnumerable<EveManufacturialQuantity>> items)
