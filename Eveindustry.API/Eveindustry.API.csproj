@@ -15,6 +15,11 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Eveindustry.Core\Eveindustry.Core.csproj" />
+      <ProjectReference Include="..\Eveindustry.Shared\Eveindustry.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="DTO\EveTypeSearch" />
     </ItemGroup>
 
 </Project>

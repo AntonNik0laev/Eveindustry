@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using AutoMapper;
-using Eveindustry.API.DTO.EveTypeSearch;
 using Eveindustry.Core;
 using Eveindustry.Core.Models;
+using Eveindustry.Shared.DTO.EveTypeSearch;
 using Microsoft.AspNetCore.Mvc;
 using RestSharp.Authenticators.OAuth;
 
@@ -33,7 +33,7 @@ namespace Eveindustry.API.Controllers
 
             return Ok(new EveTypeSearchResponse()
             {
-                SearchResults = mapper.Map<IEnumerable<EveTypeSearchInfo>>(searchResults)
+                SearchResults = mapper.Map<IList<EveTypeSearchInfo>>(searchResults)
             });
         }
     }

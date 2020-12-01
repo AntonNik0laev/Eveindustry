@@ -1,0 +1,18 @@
+﻿<span class="oi @classMapping[Type]" aria-hidden="true"></span>
+
+@code {
+    public enum IconTypes
+    {
+        Home,
+        Plus,
+        Layout
+    }
+    [Parameter]
+    public IconTypes Type { get; set; }
+    private Dictionary<IconTypes, string> classMapping = new ()
+    {
+        {IconTypes.Home, "oi-home"},
+        {IconTypes.Layout, "oi-list-rich"},
+        {IconTypes.Plus, "oi-plus"}
+    };
+}

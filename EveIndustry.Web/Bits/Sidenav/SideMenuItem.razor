@@ -1,0 +1,14 @@
+﻿<li>
+    <NavLink class="nav-link" href="@NavUrl">
+        <Icon Type="@Icon"></Icon> @Text
+    </NavLink>
+</li>
+
+@code {
+    [Parameter]
+    public string NavUrl { get; set; }
+    [Parameter]
+    public Icon.IconTypes Icon { get; set; }
+    [Parameter]
+    public string Text { get; set; }
+}

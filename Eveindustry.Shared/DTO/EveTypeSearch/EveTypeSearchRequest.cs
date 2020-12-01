@@ -1,4 +1,4 @@
-﻿namespace Eveindustry.API.DTO.EveTypeSearch
+﻿namespace Eveindustry.Shared.DTO.EveTypeSearch
 {
     public class EveTypeSearchRequest
     {

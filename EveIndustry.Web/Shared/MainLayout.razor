@@ -1,0 +1,26 @@
+﻿@using EveIndustry.Web.Bits.Sidenav
+@using EveIndustry.Web.Bits
+@layout TelerikLayout
+@inherits LayoutComponentBase
+
+<div class="page">
+    @Body
+</div>
+@* TODO Navigation?  *@
+@* *@
+@* <SideNavMenu AppName="EveIndustry" MenuItems="@MenuItems"> *@
+@*     <div class="page"> *@
+@*          *@
+@*     </div> *@
+@* </SideNavMenu> *@
+@code
+{
+
+    private List<SideNavMenu.MenuItem> MenuItems = new()
+    {
+        new(IconName.Menu, "", "Home"),
+        new(IconName.Plus, "counter", "counter"),
+        new(IconName.GridLayout, "fetchdata", "Fetch!"),
+        new(IconName.Plus, "wtf", "WTF!")
+    };
+}

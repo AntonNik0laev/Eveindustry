@@ -1,0 +1,19 @@
+﻿<TelerikDrawer Data="MenuItems" Expanded="true" Mode="DrawerMode.Push" Position="DrawerPosition.Left" Width="20em" Class="sidenav-drawer">
+    <Content>
+        @ChildContent
+    </Content>
+
+</TelerikDrawer>
+
+@code {
+    
+    public sealed record MenuItem(string Icon, string Url, string Text);
+        
+    [Parameter]
+    public string AppName { get; set; }= "BlazorWebAssembly222";
+    [Parameter]
+    public List<MenuItem> MenuItems { get; set; } 
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    
+}

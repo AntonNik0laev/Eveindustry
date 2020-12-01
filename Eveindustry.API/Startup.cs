@@ -67,6 +67,10 @@ namespace Eveindustry.API
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Eveindustry.API v1"));
+                app.UseCors(c =>
+                {
+                    c.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod();
+                });
             }
             app.UseHttpsRedirection();
 
@@ -74,7 +78,10 @@ namespace Eveindustry.API
 
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
             
         }
 

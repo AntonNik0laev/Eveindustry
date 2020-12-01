@@ -1,0 +1,28 @@
+﻿.e-search-container {
+    margin: auto;
+    width: 55em;
+}
+
+.e-search-item-container {
+    display: flex;
+    padding: 0.4em;
+    height: 1.8em;
+    cursor: pointer;
+}
+
+.e-search-item-container:hover {
+    background-color: #89c1ff;
+}
+.e-search-item-name {
+    align-self: center;
+    margin: 0.5em;
+}
+.e-search-item-category {
+    margin-left: auto;
+    align-self: center;
+    color: #6e6e6e;
+}
+::deep .k-textbox {
+    font-size: large;
+    width: 100%;
+}

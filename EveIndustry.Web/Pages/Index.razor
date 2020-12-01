@@ -1,0 +1,45 @@
+﻿@page "/"
+@using Eveindustry.Shared.DTO.EveTypeSearch
+@using EveIndustry.Web.Services
+@using System.Collections
+
+@inject IEveItemSearchService EveItemSearchService
+
+<div class="e-search-container">
+    <TelerikTextBox PlaceHolder="Search across Blueprint database" ValueChanged="async (t) => await OnSearchChanged(t)" Class="e-autocomplete"></TelerikTextBox>
+    <div class="e-search-results-container">
+        @foreach (var item in @SearchItems)
+        {
+            <div class="e-search-item-container">
+                <img src="https://images.evetech.net/types/@item.Id/icon" height="100%">
+                <div class="e-search-item-name">
+                    <span>@item.Name</span>
+                </div>
+                <div class="e-search-item-category">
+                    <span>@item.Category / @item.Group</span>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code
+{
+    EveTypeSearchInfo SelectedItem { get; set; }
+
+    IList<EveTypeSearchInfo> SearchItems = new List<EveTypeSearchInfo>()
+    {
+    };
+
+    private async Task OnSearchChanged(string newText)
+    {
+        if (string.IsNullOrEmpty(newText))
+        {
+            SearchItems.Clear();
+            return;
+        }
+        Console.WriteLine($"On search changed: {newText}");
+        var result = await EveItemSearchService.Search(newText);
+        this.SearchItems = result;
+    }
+}

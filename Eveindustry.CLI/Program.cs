@@ -64,7 +64,7 @@ namespace Eveindustry.CLI
                 .ConfigureAppConfiguration(c => c.AddInMemoryCollection(new Dictionary<string, string>()
                 {
                     {"TypeInfoLoaderOptions:SdeBasePath", "d:/data/sde"},
-                    {"EvePricesUdateConfiguration:UpdateIntervalMinutes", "1440"},
+                    {"EvePricesUdateConfiguration:UpdateIntervalMinutes", "14400"},
                     {"EveItemName", args[0]},
                     {"EveItemQuantity", args[1]}
                 }))
