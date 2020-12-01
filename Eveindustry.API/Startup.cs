@@ -16,7 +16,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-
 namespace Eveindustry.API
 {
     public class Startup
@@ -76,11 +75,16 @@ namespace Eveindustry.API
 
             app.UseRouting();
 
+            app.UseStaticFiles();
+
+            app.UseBlazorFrameworkFiles();
+
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapFallbackToFile("index.html");
             });
             
         }
