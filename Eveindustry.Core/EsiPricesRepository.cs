@@ -32,7 +32,7 @@ namespace Eveindustry.Core
         public async Task Init()
         {
             await this.UpdateData();
-            //this.updateTimer = new Timer(_ => this.UpdateData().Wait(), null, this.updateInterval, this.updateInterval);
+            this.updateTimer = new Timer(_ => this.UpdateData().Wait(), null, this.updateInterval, this.updateInterval);
         }
 
         /// <inheritdoc />
