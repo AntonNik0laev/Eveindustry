@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Eveindustry.Core.Models
 {
@@ -10,19 +10,19 @@ namespace Eveindustry.Core.Models
         /// <summary>
         /// Gets or sets esi adjusted price.
         /// </summary>
-        [JsonProperty("adjusted_price")]
+        [JsonPropertyName("adjusted_price")]
         public decimal AdjustedPrice { get; set; }
 
         /// <summary>
         /// Gets or sets esi average price.
         /// </summary>
-        [JsonProperty("average_price")]
+        [JsonPropertyName("average_price")]
         public decimal AveragePrice { get; set; }
 
         /// <summary>
         /// Gets or sets type id.
         /// </summary>
-        [JsonProperty("type_id")]
+        [JsonPropertyName("type_id")]
         public long TypeId { get; set; }
     }
 }
