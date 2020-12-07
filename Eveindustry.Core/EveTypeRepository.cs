@@ -69,6 +69,26 @@ namespace Eveindustry.Core
         }
 
         /// <inheritdoc />
+        public IList<EveType> GetAllDependencies(long rootTypeId)
+        {
+            SortedList<long, EveType> allResults = new();
+
+            void GetAllDependentIdsRecursive(long currentTypeId)
+            {
+                if(allResults.ContainsKey(currentTypeId)) return;
+                var item = this.GetById(currentTypeId);
+                allResults.Add(currentTypeId, item);
+                
+                foreach (var material in item.Blueprint?.Materials ?? new List<EveMaterialRequirement>())
+                {
+                    GetAllDependentIdsRecursive(material.MaterialId);
+                }
+            }
+            GetAllDependentIdsRecursive(rootTypeId);
+            return allResults.Values;
+        }
+
+        /// <inheritdoc />
         public EveType GetByExactName(string name)
         {
             return this.FindByPartialName(name, FindByPartialNameOptions.ExactMatch).FirstOrDefault();

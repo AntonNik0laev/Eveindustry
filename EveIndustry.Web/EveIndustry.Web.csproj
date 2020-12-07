@@ -31,6 +31,7 @@
 
     <ItemGroup>
       <Folder Include="Bits" />
+      <Folder Include="Shared\SearchList" />
     </ItemGroup>
 
 </Project>

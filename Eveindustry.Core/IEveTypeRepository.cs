@@ -39,5 +39,7 @@ namespace Eveindustry.Core
         /// <param name="options">search configuration. </param>
         /// <returns>list of matched records. </returns>
         List<EveType> FindByPartialName(string partialName, FindByPartialNameOptions options);
+
+        public IList<EveType> GetAllDependencies(long rootTypeId);
     }
 }

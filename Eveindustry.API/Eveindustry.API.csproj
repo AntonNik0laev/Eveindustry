@@ -20,7 +20,23 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="DTO\EveTypeSearch" />
+      <Compile Remove="publish\**" />
+      <Compile Remove="wwwroot\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="publish\**" />
+      <EmbeddedResource Remove="wwwroot\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="publish\**" />
+      <None Remove="wwwroot\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Remove="publish\**" />
+      <Content Remove="wwwroot\**" />
     </ItemGroup>
 
 </Project>

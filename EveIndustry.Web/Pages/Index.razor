@@ -6,7 +6,7 @@
 @inject IEveItemSearchService EveItemSearchService
 
 <div class="e-search-container">
-    <TelerikTextBox PlaceHolder="Search across Blueprint database" ValueChanged="async (t) => await OnSearchChanged(t)" Class="e-autocomplete"></TelerikTextBox>
+    <TelerikTextBox PlaceHolder="Search across Blueprint database" ValueChanged="async (t) => await OnSearchChanged(t)" Class="e-autocomplete"/>
     <div class="e-search-results-container">
         @foreach (var item in @SearchItems)
         {
@@ -25,8 +25,6 @@
 
 @code
 {
-    EveTypeSearchInfo SelectedItem { get; set; }
-
     IList<EveTypeSearchInfo> SearchItems = new List<EveTypeSearchInfo>()
     {
     };

@@ -17,6 +17,7 @@ using Eveindustry.Sde.Models.Config;
 using Eveindustry.Sde.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -85,14 +86,14 @@ namespace Eveindustry.CLI
             services.AddOptions<TypeInfoLoaderOptions>().Bind(configuration.GetSection(nameof(TypeInfoLoaderOptions)));
             services.AddOptions<EvePricesUdateConfiguration>().Bind(configuration.GetSection(nameof(EvePricesUdateConfiguration)));
 
-            services.AddSingleton<ISdeDataRepository, SdeDataRepository>();
-            services.AddSingleton<ISdeDataLoader, SdeDataLoader>();
-            services.AddSingleton<IEsiPricesRepository, EsiPricesRepository>();
-            services.AddSingleton<IEvePricesRepository, EvePricesRepository>();
-            services.AddSingleton<ITypeIdsSource, AllTypeIdsSource>();
+            services.TryAddSingleton<ISdeDataRepository, SdeDataRepository>();
+            services.TryAddSingleton<ISdeDataLoader, SdeDataLoader>();
+            services.TryAddSingleton<IEsiPricesRepository, EsiPricesRepository>();
+            services.TryAddSingleton<IEvePricesRepository, EvePricesRepository>();
+            services.TryAddSingleton<ITypeIdsSource, AllTypeIdsSource>();
 
-            services.AddSingleton<IEveTypeRepository, EveTypeRepository>();
-            services.AddScoped<IManufacturingInfoBuilder, ManufacturingInfoBuilder>();
+            services.TryAddSingleton<IEveTypeRepository, EveTypeRepository>();
+            services.TryAddScoped<IManufacturingInfoBuilder, ManufacturingInfoBuilder>();
             services.AddAutoMapper(typeof(EveType).Assembly);
             services.AddHttpClient();
             services.AddLogging(c =>

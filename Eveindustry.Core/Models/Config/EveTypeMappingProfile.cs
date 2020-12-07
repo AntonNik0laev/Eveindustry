@@ -19,14 +19,18 @@ namespace Eveindustry.Core.Models.Config
             CreateMap<SdeMaterialRequirement, EveMaterialRequirement>();
             CreateMap<SdeBlueprint, EveBlueprint>().ForMember(m => m.Materials, c => c.MapFrom(s => s.MaterialRequirements));
 
-            CreateMap<SdeType, EveType>();
+            CreateMap<SdeType, EveType>()
+                .ForMember(d => d.MarketBuy, c => c.Ignore())
+                .ForMember(d => d.MarketSell, c => c.Ignore())
+                .ForMember(d => d.AdjustedPrice, c=> c.Ignore());
             
             CreateMap<ESIPriceData, EveType>()
                 .ForMember(m => m.AdjustedPrice, c => c.MapFrom(s => s.AdjustedPrice))
                 .ForAllOtherMembers(c => c.Ignore());
             CreateMap<EvePriceInfo, EveType>()
                 .ForMember(m => m.MarketBuy, c => c.MapFrom(s => s.JitaBuy))
-                .ForMember(m => m.MarketSell, c => c.MapFrom(s => s.JitaSell));
+                .ForMember(m => m.MarketSell, c => c.MapFrom(s => s.JitaSell))
+                .ForAllOtherMembers(c => c.Ignore());
             
 
         }
