@@ -3,6 +3,9 @@ using System.Net.Http;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Text;
+using AutoMapper;
+using Eveindustry.Shared;
+using Eveindustry.Shared.Profiles;
 using EveIndustry.Web.Services;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -20,8 +23,12 @@ namespace EveIndustry.Web
 
             builder.Services.AddScoped(
                 sp => new HttpClient {BaseAddress = new Uri("https://localhost:1337")})
+                .AddAutoMapper(c => c.AddProfile<EveItemManufacturingInfoMappingProfile>())
+                .AddTelerikBlazor()
+                
                 .AddScoped<IEveItemSearchService, EveItemSearchService>()
-                .AddTelerikBlazor();
+                .AddScoped<IManufacturingInfoBuilder, ManufacturingInfoBuilder>()
+                ;
 
             await builder.Build().RunAsync();
         }

@@ -1,4 +1,4 @@
-﻿namespace Eveindustry.Core.Models
+﻿namespace Eveindustry.Shared
 {
     /// <summary>
     /// Information related to materials required for manufacturing job

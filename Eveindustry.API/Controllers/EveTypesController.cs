@@ -39,11 +39,11 @@ namespace Eveindustry.API.Controllers
             });
         }
 
-        [HttpGet("dependencies")]
+        [HttpGet("dependencies/{typeId}")]
         [ProducesResponseType(typeof(EveTypeDependenciesResponse), 200)]
-        public IActionResult GetAllDependencies([FromQuery] EveTypeDependenciesRequest request)
+        public IActionResult GetAllDependencies([FromRoute] long typeId)
         {
-            var results = this.repository.GetAllDependencies(request.TypeId);
+            var results = this.repository.GetAllDependencies(typeId);
             return Ok(new EveTypeDependenciesResponse()
             {
                 EveTypes = mapper.Map<IList<EveTypeDto>>(results)

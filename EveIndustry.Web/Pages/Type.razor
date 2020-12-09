@@ -1,0 +1,99 @@
+﻿@page "/Type/{id:long}"
+@using Eveindustry.Shared.DTO.EveType
+@using EveIndustry.Web.Services
+@using Eveindustry.Shared
+
+@inject IEveItemSearchService EveItemSearchService
+@inject IManufacturingInfoBuilder ManufacturingInfoBuilder;
+
+<h1>Manufacturing plan for @ItemToBuild?.Name . Quantity: <TelerikNumericTextBox @bind-Value="@Quantity" OnChange="arg => OnQuantityChanged(arg)" /> </h1>
+@for (int i = 0; i < Items.Count(); i++)
+{
+    int index = i;
+    <h2>Stage @i</h2>
+    <TelerikGrid
+        Data="@Items[index]"
+        
+        Sortable="true"
+        SelectionMode="GridSelectionMode.Multiple"
+        SelectedItemsChanged="(IEnumerable<EveManufacturialQuantity> selected) => OnSelectedChanged(selected, index)"
+        SelectedItems="@SelectedItems[index]">
+        
+        <GridColumns>
+            <GridCheckboxColumn></GridCheckboxColumn>
+            <GridColumn Field="Material.Name"/>
+            <GridColumn Field="@nameof(EveManufacturialQuantity.Quantity)"/>
+            <GridColumn Field="@nameof(EveManufacturialQuantity.TotalJitaBuyPrice)"/>
+            <GridColumn Field="@nameof(EveManufacturialQuantity.TotalJitaSellPrice)"/>
+            <GridColumn Field="@nameof(EveManufacturialQuantity.MaterialsJitaBuyPrice)"/>
+            <GridColumn Field="@nameof(EveManufacturialQuantity.MaterialsJitaSellPrice)"/>
+            <GridColumn Field="Material.Category.Name"/>
+            <GridColumn Field="Material.Group.Name"/>
+        </GridColumns>
+    </TelerikGrid>
+}
+<h3>Type: </h3>
+
+
+@code {
+
+    [Parameter]
+    public long Id { get; set; }
+
+    public long Quantity { get; set; } = 1;
+    
+    public IList<List<EveManufacturialQuantity>> SelectedItems { get; set; } = new List<List<EveManufacturialQuantity>>();
+
+    public IList<IEnumerable<EveManufacturialQuantity>> Items { get; set; } = new List<IEnumerable<EveManufacturialQuantity>>();
+    
+    public EveTypeDto ItemToBuild { get; set; }
+
+    private SortedList<long, EveTypeDto> rawItems;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var items = await EveItemSearchService.GetAllDependent(this.Id);
+
+        this.ItemToBuild = items.First(i => i.Id == Id);
+        rawItems = new SortedList<long, EveTypeDto>(items.ToDictionary(i => i.Id, i => i));
+        var info = ManufacturingInfoBuilder.BuildInfo(this.Id, rawItems);
+        this.Items = ManufacturingInfoBuilder.GroupIntoStages(ManufacturingInfoBuilder.GetFlatManufacturingList(info, this.Quantity), Array.Empty<long>()).ToList();
+        foreach (var item in this.Items)
+        {
+            SelectedItems.Add(new List<EveManufacturialQuantity>());
+        }
+        base.OnParametersSet();
+    }
+
+    private void ReloadWithSelectedItems()
+    {
+        var ignoreFlat = this.SelectedItems.SelectMany(i => i).Select(i => i.Material.Id).ToList();
+        
+        var info = ManufacturingInfoBuilder.BuildInfo(this.Id, rawItems);
+        this.Items.Clear();
+        this.Items = ManufacturingInfoBuilder.GroupIntoStages(ManufacturingInfoBuilder.GetFlatManufacturingList(info, this.Quantity, ignoreFlat), ignoreFlat).ToList();
+        for (int i = 0; i < this.Items.Count; i++)
+        {
+            this.SelectedItems[i] = new List<EveManufacturialQuantity>();
+            foreach (var stageItem in this.Items[i])
+            {
+                if (ignoreFlat.Contains(stageItem.Material.Id))
+                {
+                    this.SelectedItems[i].Add(stageItem);
+                }
+            }
+        }
+    }
+
+    private void OnSelectedChanged(IEnumerable<EveManufacturialQuantity> selected, int index)
+    {
+        SelectedItems[index] = selected.ToList();
+        ReloadWithSelectedItems();
+    }
+
+    private void OnQuantityChanged(object arg)
+    {
+        ReloadWithSelectedItems();
+    }
+
+}

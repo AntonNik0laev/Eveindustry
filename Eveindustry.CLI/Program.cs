@@ -1,26 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Runtime.CompilerServices;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using AutoMapper;
+using Eveindustry.API;
 using Eveindustry.Core;
 using Eveindustry.Core.Models;
 using Eveindustry.Core.Models.Config;
 using Eveindustry.Sde;
-using Eveindustry.Sde.Models;
 using Eveindustry.Sde.Models.Config;
 using Eveindustry.Sde.Repositories;
+using Eveindustry.Shared;
+using Eveindustry.Shared.DTO.EveType;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Serilog;
 
 namespace Eveindustry.CLI
@@ -94,7 +91,7 @@ namespace Eveindustry.CLI
 
             services.TryAddSingleton<IEveTypeRepository, EveTypeRepository>();
             services.TryAddScoped<IManufacturingInfoBuilder, ManufacturingInfoBuilder>();
-            services.AddAutoMapper(typeof(EveType).Assembly);
+            services.AddAutoMapper(typeof(EveType).Assembly, typeof(EveTypeDto).Assembly, typeof(Startup).Assembly);
             services.AddHttpClient();
             services.AddLogging(c =>
             {

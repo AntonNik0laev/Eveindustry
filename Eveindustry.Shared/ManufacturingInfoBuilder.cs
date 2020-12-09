@@ -2,39 +2,39 @@
 using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
-using Eveindustry.Core.Models;
+using Eveindustry.Shared.DTO.EveType;
 
-namespace Eveindustry.Core
+namespace Eveindustry.Shared
 {
     /// <inheritdoc />
     public class ManufacturingInfoBuilder : IManufacturingInfoBuilder
     {
-        private readonly IEveTypeRepository typeRepository;
+        private readonly IDictionary<long, EveTypeDto> types;
         private readonly IMapper mapper;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ManufacturingInfoBuilder"/> class.
         /// </summary>
-        public ManufacturingInfoBuilder(IMapper mapper, IEveTypeRepository typeRepository)
+        public ManufacturingInfoBuilder(IMapper mapper)
         {
-            this.typeRepository = typeRepository;
+            this.types = types;
             this.mapper = mapper;
         }
 
         /// <inheritdoc />
-        public EveItemManufacturingInfo BuildInfo(long id)
+        public EveItemManufacturingInfo BuildInfo(long id, IDictionary<long, EveTypeDto> types)
         {
-            return this.BuildInfoRecursive(id, new SortedList<long, EveItemManufacturingInfo>());
+            return this.BuildInfoRecursive(id, types, new SortedList<long, EveItemManufacturingInfo>());
         }
 
         /// <inheritdoc />
-        public SortedList<long, EveItemManufacturingInfo> BuildInfo(IEnumerable<long> typeIds)
+        public SortedList<long, EveItemManufacturingInfo> BuildInfo(IEnumerable<long> typeIds, IDictionary<long, EveTypeDto> types)
         {
             var result = new SortedList<long, EveItemManufacturingInfo>();
             foreach (var typeId in typeIds)
             {
                 // Method will add result item to list, so discarding return.
-                _ = this.BuildInfoRecursive(typeId, result);
+                _ = this.BuildInfoRecursive(typeId, types, result);
             }
 
             return result;
@@ -47,7 +47,7 @@ namespace Eveindustry.Core
             IEnumerable<long> ignoreTypeIds)
         {
             var totalList = new SortedList<long, EveManufacturialQuantity>();
-            var typeIds = ignoreTypeIds.ToList();
+            var typeIds = ignoreTypeIds?.ToList() ?? new List<long>();
 
             void BuildFlatListRecursive(EveManufacturialQuantity currentItem)
             {
@@ -145,14 +145,15 @@ namespace Eveindustry.Core
 
         private EveItemManufacturingInfo BuildInfoRecursive(
             long id,
+            IDictionary<long, EveTypeDto> types,
             SortedList<long, EveItemManufacturingInfo> allResults)
         {
-            var eveTypeInfo = this.typeRepository.GetById(id);
+            var eveTypeInfo = types[id];
 
             var dependencies = eveTypeInfo.Blueprint?.Materials ?? new List<EveMaterialRequirement>();
             var itemsPerRun = eveTypeInfo.Blueprint?.ItemsPerRun;
 
-            var manufacturingInfo = mapper.Map<EveType, EveItemManufacturingInfo>(eveTypeInfo);
+            var manufacturingInfo = mapper.Map<EveTypeDto, EveItemManufacturingInfo>(eveTypeInfo);
             if (!allResults.ContainsKey(id))
             {
                 allResults.Add(id, manufacturingInfo);
@@ -163,7 +164,7 @@ namespace Eveindustry.Core
             {
                 var dependencyInfo = allResults.ContainsKey(dependency.MaterialId)
                     ? allResults[dependency.MaterialId]
-                    : this.BuildInfoRecursive(dependency.MaterialId, allResults);
+                    : this.BuildInfoRecursive(dependency.MaterialId, types, allResults);
                 manufacturingInfo.Requirements.Add(new EveManufacturialQuantity()
                 {
                     Quantity = dependency.Quantity,

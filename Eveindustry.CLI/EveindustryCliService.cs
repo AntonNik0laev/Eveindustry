@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoMapper;
 using Eveindustry.Core;
 using Eveindustry.Core.Models;
+using Eveindustry.Shared;
+using Eveindustry.Shared.DTO.EveType;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
@@ -17,13 +20,15 @@ namespace Eveindustry.CLI
         private readonly IManufacturingInfoBuilder manufacturingBuilder;
         private readonly IEveTypeRepository etRepository;
         private readonly IHostApplicationLifetime applicationLifetime;
+        private readonly IMapper mapper;
 
-        public EveindustryCliService(IConfiguration config, IManufacturingInfoBuilder manufacturingBuilder, IEveTypeRepository etRepository, IHostApplicationLifetime applicationLifetime)
+        public EveindustryCliService(IConfiguration config, IManufacturingInfoBuilder manufacturingBuilder, IEveTypeRepository etRepository, IHostApplicationLifetime applicationLifetime, IMapper mapper)
         {
             this.config = config;
             this.manufacturingBuilder = manufacturingBuilder;
             this.etRepository = etRepository;
             this.applicationLifetime = applicationLifetime;
+            this.mapper = mapper;
         }
         /// <inheritdoc />
         public Task StartAsync(CancellationToken cancellationToken)
@@ -38,7 +43,11 @@ namespace Eveindustry.CLI
             Console.WriteLine("TOTAL MANUFACTURING LIST");
 
             var itemToBuild = this.etRepository.GetByExactName(name);
-            var infoTree = this.manufacturingBuilder.BuildInfo(itemToBuild.Id);
+            var allDependencies = this.etRepository.GetAllDependencies(itemToBuild.Id).ToList();
+            
+            var mapped = this.mapper.Map<IList<EveTypeDto>>(allDependencies);
+            var sorted = new SortedList<long, EveTypeDto>(mapped.ToDictionary(i => i.Id, i => i));
+            var infoTree = this.manufacturingBuilder.BuildInfo(itemToBuild.Id,sorted);
             var flat = this.manufacturingBuilder.GetFlatManufacturingList(infoTree, quantity, terminationTypes);
             var grouped = this.manufacturingBuilder.GroupIntoStages(flat, terminationTypes);
 

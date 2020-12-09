@@ -48,7 +48,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Eveindustry.API\Eveindustry.API.csproj" />
       <ProjectReference Include="..\Eveindustry.Core\Eveindustry.Core.csproj" />
+      <ProjectReference Include="..\Eveindustry.Shared\Eveindustry.Shared.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Eveindustry.Core.Models
+namespace Eveindustry.Shared
 {
     /// <summary>
     /// Information required for manufacturing eve item.

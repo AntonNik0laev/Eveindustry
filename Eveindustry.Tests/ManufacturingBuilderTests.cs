@@ -3,10 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
+using Eveindustry.API;
 using Eveindustry.CLI;
 using Eveindustry.Core;
 using Eveindustry.Core.Models;
 using Eveindustry.Core.Models.Config;
+using Eveindustry.Shared;
+using Eveindustry.Shared.DTO.EveType;
+using Eveindustry.Shared.Profiles;
 using Eveindustry.Tests.Utils;
 using FluentAssertions;
 using Moq;
@@ -19,6 +23,7 @@ namespace Eveindustry.Tests
     {
         private EveType[] types;
         private ManufacturingInfoBuilder sut;
+        private SortedList<long, EveTypeDto> sorted;
         
         [SetUp]
         public void Setup()
@@ -65,9 +70,18 @@ namespace Eveindustry.Tests
             etMock.Setup(x => x.GetById(7)).Returns(etsub7);
             etMock.Setup(x => x.GetById(8)).Returns(etsub8);
             etMock.Setup(x => x.GetById(9)).Returns(etsub9);
-            var mapperConfig = new MapperConfiguration(c => c.AddProfile(new EveItemManufacturingInfoMappingProfile()));
+            var mapperConfig = new MapperConfiguration(c =>
+            {
+                c.AddProfile(new EveItemManufacturingInfoMappingProfile());
+                c.AddProfile(new DtoMappingProfile());
+            });
 
-            var mb = new ManufacturingInfoBuilder(mapperConfig.CreateMapper(), etMock.Object);
+            var flatList = new List<EveType>() {etmain, etsub2, etsub3, etsub4, etsub5, etsub6, etsub7, etsub8, etsub9};
+
+            var mapper = mapperConfig.CreateMapper();
+            var mapped = mapper.Map<IList<EveTypeDto>>(flatList);
+            this.sorted = new SortedList<long, EveTypeDto>(mapped.ToDictionary(i => i.Id, i => i));
+            var mb = new ManufacturingInfoBuilder(mapper);
             this.sut = mb;
             this.types = new[]
             {
@@ -86,7 +100,7 @@ namespace Eveindustry.Tests
         [Test, Description("When getting build information and requested items exist, result should not be null or empty")]
         public void build_info_returns_non_empty_results()
         {
-            var result = this.sut.BuildInfo(1);
+            var result = this.sut.BuildInfo(1, this.sorted);
             Assert.NotNull(result, "Expected 'BuildInfo' return non empty results");
         }
 
@@ -95,7 +109,7 @@ namespace Eveindustry.Tests
                            "it's dependencies and all dependency dependencies down to buttom level")]
         public void build_info_returns_full_hierarchy()
         {
-            var result = this.sut.BuildInfo(1);
+            var result = this.sut.BuildInfo(1, this.sorted);
 
             //ROOT
             result.Id.Should().Be(this.types[0].Id, "it's configured per eve type info");
@@ -189,7 +203,7 @@ namespace Eveindustry.Tests
                            " aggregated for each item")]
         public void get_flat_list_should_return_aggregated_list_with_total_quantities()
         {
-            var result = this.sut.GetFlatManufacturingList(this.sut.BuildInfo(1), 2, Array.Empty<long>());
+            var result = this.sut.GetFlatManufacturingList(this.sut.BuildInfo(1, this.sorted), 2, Array.Empty<long>());
 
             result.Count().Should().Be(this.types.Count(), "Aggregated list should contain no duplicates");
             var main = result.First(i => i.Material.Id == this.types[0].Id);
@@ -229,7 +243,7 @@ namespace Eveindustry.Tests
         public void get_flat_list_with_ignored_ids_parameter_should_not_contain_dependencies_for_ignored_ids()
         {
             var ignoreList = new[] {2L, 3L};
-            var results = sut.GetFlatManufacturingList(sut.BuildInfo(1), 1, ignoreList);
+            var results = sut.GetFlatManufacturingList(sut.BuildInfo(1, this.sorted), 1, ignoreList);
             results.Should().HaveCount(8, "Ignore list contains one dependency which should be excluded");
             results.Should().NotContain(i => i.Material.Id == 6,
                 "Excluded item id is 6, so it should not be in flat list");
@@ -239,7 +253,7 @@ namespace Eveindustry.Tests
         public void stages_should_not_contain_dependencies_of_items_from_ignore_list()
         {
             var ignoreList = new[] {2L, 3L, 8L};
-            var results = sut.GroupIntoStages(sut.GetFlatManufacturingList(sut.BuildInfo(1), 1, ignoreList), ignoreList);
+            var results = sut.GroupIntoStages(sut.GetFlatManufacturingList(sut.BuildInfo(1, this.sorted), 1, ignoreList), ignoreList);
             results.Should().HaveCount(4, "manufacturing should contain 4 stages");
             var stage0 = results.First();
             stage0.Should().HaveCount(4);

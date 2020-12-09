@@ -1,26 +1,52 @@
 ﻿@using EveIndustry.Web.Bits.Sidenav
 @using EveIndustry.Web.Bits
+@using EveIndustry.Web.Services
+@using Eveindustry.Shared.DTO.EveTypeSearch
 @layout TelerikLayout
 @inherits LayoutComponentBase
 
+
+@inject IEveItemSearchService EveItemSearchService
+<div class="header">
+
+    <div class="e-search-container">
+        <TelerikTextBox PlaceHolder="Search across Blueprint database" ValueChanged="async (t) => await OnSearchChanged(t)" Class="e-autocomplete"/>
+        <div class="e-search-results-container">
+            @foreach (var item in @SearchItems)
+            {
+                <a href="/type/@item.Id" class="e-search-item-container">
+                    <img src="https://images.evetech.net/types/@item.Id/icon" height="100%">
+                    <div class="e-search-item-name">
+                        <span>@item.Name</span>
+                    </div>
+                    <div class="e-search-item-category">
+                        <span >@item.Category / @item.Group</span>
+                    </div>
+                </a>
+            }
+        </div>
+    </div>
+</div>
 <div class="page">
     @Body
 </div>
-@* TODO Navigation?  *@
-@* *@
-@* <SideNavMenu AppName="EveIndustry" MenuItems="@MenuItems"> *@
-@*     <div class="page"> *@
-@*          *@
-@*     </div> *@
-@* </SideNavMenu> *@
+
+
 @code
 {
-
-    private List<SideNavMenu.MenuItem> MenuItems = new()
+    IList<EveTypeSearchInfo> SearchItems = new List<EveTypeSearchInfo>()
     {
-        new(IconName.Menu, "", "Home"),
-        new(IconName.Plus, "counter", "counter"),
-        new(IconName.GridLayout, "fetchdata", "Fetch!"),
-        new(IconName.Plus, "wtf", "WTF!")
     };
+
+    private async Task OnSearchChanged(string newText)
+    {
+        if (string.IsNullOrEmpty(newText))
+        {
+            SearchItems.Clear();
+            return;
+        }
+        Console.WriteLine($"On search changed: {newText}");
+        var result = await EveItemSearchService.Search(newText);
+        this.SearchItems = result;
+    }
 }

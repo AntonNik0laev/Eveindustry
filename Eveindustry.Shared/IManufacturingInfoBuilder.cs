@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using Eveindustry.Core.Models;
+using Eveindustry.Shared.DTO.EveType;
 
-namespace Eveindustry.Core
+namespace Eveindustry.Shared
 {
     /// <summary>
     /// Build manufacturing info relative details, using multiple data sources.
@@ -18,15 +17,18 @@ namespace Eveindustry.Core
         ///     4. Item adjusted/average prices imported from eve ESI.
         /// </summary>
         /// <param name="id">item id. </param>
+        /// <param name="types"></param>
         /// <returns>manufacturing details information. </returns>
-        EveItemManufacturingInfo BuildInfo(long id);
+        EveItemManufacturingInfo BuildInfo(long id, IDictionary<long, EveTypeDto> types);
 
         /// <summary>
-        /// Build manufacturing info details for list of ids. See <see cref="BuildInfo(long)"/>
+        /// Build manufacturing info details for list of ids. See <see cref="BuildInfo(long,System.Collections.Generic.IDictionary{long,Eveindustry.Shared.DTO.EveType.EveTypeDto})"/>
         /// </summary>
         /// <param name="typeIds">list of type ids to get detailed information. </param>
+        /// <param name="types"></param>
         /// <returns>manufacturing details information. </returns>
-        SortedList<long, EveItemManufacturingInfo> BuildInfo(IEnumerable<long> typeIds);
+        SortedList<long, EveItemManufacturingInfo> BuildInfo(IEnumerable<long> typeIds,
+            IDictionary<long, EveTypeDto> types);
 
         /// <summary>
         /// Given item manufacturing info with all it's dependencies,
