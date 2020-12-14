@@ -38,5 +38,11 @@
       <Content Remove="publish\**" />
       <Content Remove="wwwroot\**" />
     </ItemGroup>
+    
+    <ItemGroup>
+        <Content Include="../sdedata.bin">
+            <CopyToOutputDirectory >Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
 
 </Project>

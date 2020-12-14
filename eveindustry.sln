@@ -8,6 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{08C8FF1A-3CF5-4405-82AF-48B7ACB4E867}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		sdedata.bin = sdedata.bin
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eveindustry.Tests", "Eveindustry.Tests\Eveindustry.Tests.csproj", "{2D843D10-18E8-4C83-BA97-E9FE416B2EBC}"
@@ -21,6 +22,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EveIndustry.Web", "EveIndustry.Web\EveIndustry.Web.csproj", "{70489B2B-C45F-45BD-BB0B-7F3F6B24A43E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eveindustry.Shared", "Eveindustry.Shared\Eveindustry.Shared.csproj", "{CF252A1F-8D76-46D1-ACD4-FC65842421FD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EveIndustry.UpdateData", "EveIndustry.UpdateData\EveIndustry.UpdateData.csproj", "{76DA00BF-FC54-4A48-9B26-B0F9BAEF6C8C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -56,6 +59,10 @@ Global
 		{CF252A1F-8D76-46D1-ACD4-FC65842421FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CF252A1F-8D76-46D1-ACD4-FC65842421FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CF252A1F-8D76-46D1-ACD4-FC65842421FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76DA00BF-FC54-4A48-9B26-B0F9BAEF6C8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76DA00BF-FC54-4A48-9B26-B0F9BAEF6C8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76DA00BF-FC54-4A48-9B26-B0F9BAEF6C8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76DA00BF-FC54-4A48-9B26-B0F9BAEF6C8C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -2,7 +2,6 @@
 @using EveIndustry.Web.Bits
 @using EveIndustry.Web.Services
 @using Eveindustry.Shared.DTO.EveTypeSearch
-@layout TelerikLayout
 @inherits LayoutComponentBase
 
 
@@ -10,7 +9,7 @@
 <div class="header">
 
     <div class="e-search-container">
-        <TelerikTextBox PlaceHolder="Search across Blueprint database" ValueChanged="async (t) => await OnSearchChanged(t)" Class="e-autocomplete"/>
+        <input placeholder="Search across Blueprint database" @onkeyup="async (t) => await OnSearchChanged(t)" Class="e-autocomplete" @bind-value="TextboxVal" @bind-value:event="oninput"/>
         <div class="e-search-results-container">
             @foreach (var item in @SearchItems)
             {
@@ -37,9 +36,13 @@
     IList<EveTypeSearchInfo> SearchItems = new List<EveTypeSearchInfo>()
     {
     };
+    
+    public string TextboxVal { get; set; } = String.Empty;
 
-    private async Task OnSearchChanged(string newText)
+    private async Task OnSearchChanged(KeyboardEventArgs change)
     {
+        var newText = TextboxVal;
+        Console.WriteLine($"VALUE: {TextboxVal}");
         if (string.IsNullOrEmpty(newText))
         {
             SearchItems.Clear();
