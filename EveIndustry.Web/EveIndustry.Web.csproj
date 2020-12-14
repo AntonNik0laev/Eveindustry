@@ -5,11 +5,11 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="BlazorTable" Version="1.14.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.0" PrivateAssets="all" />
         <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
         <PackageReference Include="System.Net.Http.Json" Version="5.0.0" />
-        <PackageReference Include="Telerik.UI.for.Blazor" Version="2.20.0" />
     </ItemGroup>
 
     <ItemGroup>

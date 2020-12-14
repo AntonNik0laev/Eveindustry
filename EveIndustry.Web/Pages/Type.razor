@@ -2,16 +2,27 @@
 @using Eveindustry.Shared.DTO.EveType
 @using EveIndustry.Web.Services
 @using Eveindustry.Shared
+@using System.Collections.ObjectModel
 
 @inject IEveItemSearchService EveItemSearchService
 @inject IManufacturingInfoBuilder ManufacturingInfoBuilder;
 
-<h1>Manufacturing plan for @ItemToBuild?.Name . Quantity: <TelerikNumericTextBox @bind-Value="@Quantity" OnChange="arg => OnQuantityChanged(arg)" /> </h1>
+<h1>Manufacturing plan for @ItemToBuild?.Name . Quantity:         <input @onkeyup="async (t) => await OnSearchChanged(t)" Class="e-autocomplete" @bind-value="Quantity" @bind-value:event="oninput"/> </h1>
+<button class="btn btn-primary" @onclick="ReloadWithSelectedItems">Reload</button>
 @for (int i = 0; i < Items.Count(); i++)
 {
     int index = i;
-    <h2>Stage @i</h2>
-    <TelerikGrid
+    <h2>Stage @i</h2> 
+    <BlazorTable.Table PageSize="9999" TableItem="EveManufacturialQuantity" Items="Items[index]" SelectionType="BlazorTable.SelectionType.Multiple" SelectedItems="SelectedItems[index]" @ref="Table">
+        <BlazorTable.Column TableItem="EveManufacturialQuantity" Title="Id" Field="@(x => x.Material.Id)" Width="4%"/>
+        <BlazorTable.Column TableItem="EveManufacturialQuantity" Sortable="true" Title="Name" Field="@(x => x.Material.Name)" Width="30%"/>
+        <BlazorTable.Column TableItem="EveManufacturialQuantity" Sortable="true" Title="Quantity" Field="@(x => x.Quantity)" Width="12%"/>
+        <BlazorTable.Column TableItem="EveManufacturialQuantity" Sortable="true" Title="JBV" Field="@(x => x.TotalJitaBuyPrice)" Width="14%"/>
+        <BlazorTable.Column TableItem="EveManufacturialQuantity" Sortable="true" Title="JSV" Field="@(x => x.TotalJitaSellPrice)" Width="14%"/>
+        <BlazorTable.Column TableItem="EveManufacturialQuantity" Sortable="true" Title="Materials JSV" Field="@(x => x.MaterialsJitaBuyPrice)" Width="14%"/>
+        <BlazorTable.Column TableItem="EveManufacturialQuantity" Sortable="true" Title="Materials JSV" Field="@(x => x.MaterialsJitaSellPrice)" Width="14%"/>
+    </BlazorTable.Table>
+    /*<TelerikGrid
         Data="@Items[index]"
         
         Sortable="true"
@@ -30,9 +41,8 @@
             <GridColumn Field="Material.Category.Name"/>
             <GridColumn Field="Material.Group.Name"/>
         </GridColumns>
-    </TelerikGrid>
+    </TelerikGrid> */
 }
-<h3>Type: </h3>
 
 
 @code {
@@ -41,6 +51,8 @@
     public long Id { get; set; }
 
     public long Quantity { get; set; } = 1;
+    
+    public BlazorTable.Table<EveManufacturialQuantity> Table { get; set; }
     
     public IList<List<EveManufacturialQuantity>> SelectedItems { get; set; } = new List<List<EveManufacturialQuantity>>();
 
@@ -92,6 +104,11 @@
     }
 
     private void OnQuantityChanged(object arg)
+    {
+        ReloadWithSelectedItems();
+    }
+
+    private async Task OnSearchChanged(KeyboardEventArgs keyboardEventArgs)
     {
         ReloadWithSelectedItems();
     }
