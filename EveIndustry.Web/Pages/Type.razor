@@ -22,26 +22,6 @@
         <BlazorTable.Column TableItem="EveManufacturialQuantity" Sortable="true" Title="Materials JSV" Field="@(x => x.MaterialsJitaBuyPrice)" Width="14%"/>
         <BlazorTable.Column TableItem="EveManufacturialQuantity" Sortable="true" Title="Materials JSV" Field="@(x => x.MaterialsJitaSellPrice)" Width="14%"/>
     </BlazorTable.Table>
-    /*<TelerikGrid
-        Data="@Items[index]"
-        
-        Sortable="true"
-        SelectionMode="GridSelectionMode.Multiple"
-        SelectedItemsChanged="(IEnumerable<EveManufacturialQuantity> selected) => OnSelectedChanged(selected, index)"
-        SelectedItems="@SelectedItems[index]">
-        
-        <GridColumns>
-            <GridCheckboxColumn></GridCheckboxColumn>
-            <GridColumn Field="Material.Name"/>
-            <GridColumn Field="@nameof(EveManufacturialQuantity.Quantity)"/>
-            <GridColumn Field="@nameof(EveManufacturialQuantity.TotalJitaBuyPrice)"/>
-            <GridColumn Field="@nameof(EveManufacturialQuantity.TotalJitaSellPrice)"/>
-            <GridColumn Field="@nameof(EveManufacturialQuantity.MaterialsJitaBuyPrice)"/>
-            <GridColumn Field="@nameof(EveManufacturialQuantity.MaterialsJitaSellPrice)"/>
-            <GridColumn Field="Material.Category.Name"/>
-            <GridColumn Field="Material.Group.Name"/>
-        </GridColumns>
-    </TelerikGrid> */
 }
 
 
