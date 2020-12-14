@@ -19,7 +19,7 @@ namespace Eveindustry.API
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration(c => c.AddJsonFile("appSettings.json"))
+                .ConfigureAppConfiguration(c => c.AddJsonFile("appsettings.json"))
                 .UseServiceProviderFactory(new AutofacServiceProviderFactory())
                 .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
     }

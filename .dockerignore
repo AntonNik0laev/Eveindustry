@@ -1,0 +1,12 @@
+**/bin/
+**/obj/
+out/
+.idea/
+.nuget/
+.git/
+.vs/
+packages/
+publish/
+Packages/
+docker-compose.yml
+Dockerfile

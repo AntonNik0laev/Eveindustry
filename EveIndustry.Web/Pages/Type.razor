@@ -13,7 +13,7 @@
 {
     int index = i;
     <h2>Stage @i</h2> 
-    <BlazorTable.Table PageSize="9999" TableItem="EveManufacturialQuantity" Items="Items[index]" SelectionType="BlazorTable.SelectionType.Multiple" SelectedItems="SelectedItems[index]" @ref="Table">
+    <BlazorTable.Table PageSize="9999" TableItem="EveManufacturialQuantity" Items="Items[index]" SelectionType="BlazorTable.SelectionType.Multiple" SelectedItems="SelectedItems[index]" >
         <BlazorTable.Column TableItem="EveManufacturialQuantity" Title="Id" Field="@(x => x.Material.Id)" Width="4%"/>
         <BlazorTable.Column TableItem="EveManufacturialQuantity" Sortable="true" Title="Name" Field="@(x => x.Material.Name)" Width="30%"/>
         <BlazorTable.Column TableItem="EveManufacturialQuantity" Sortable="true" Title="Quantity" Field="@(x => x.Quantity)" Width="12%"/>
@@ -31,9 +31,7 @@
     public long Id { get; set; }
 
     public long Quantity { get; set; } = 1;
-    
-    public BlazorTable.Table<EveManufacturialQuantity> Table { get; set; }
-    
+
     public IList<List<EveManufacturialQuantity>> SelectedItems { get; set; } = new List<List<EveManufacturialQuantity>>();
 
     public IList<IEnumerable<EveManufacturialQuantity>> Items { get; set; } = new List<IEnumerable<EveManufacturialQuantity>>();

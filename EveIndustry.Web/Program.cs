@@ -21,9 +21,14 @@ namespace EveIndustry.Web
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("#app");
+#if DEBUG
+            var baseAddress = "https://localhost:1337";
+#else
+            var baseAddress = builder.HostEnvironment.BaseAddress;
+#endif
 
             builder.Services.AddScoped(
-                sp => new HttpClient {BaseAddress = new Uri("https://localhost:1337")})
+                sp => new HttpClient {BaseAddress = new Uri(baseAddress)})
                 .AddAutoMapper(c => c.AddProfile<EveItemManufacturingInfoMappingProfile>())
                 .AddBlazorTable()
                 
