@@ -2,3 +2,19 @@
     font-family: 'Roboto', sans-serif;
     height: 100%;
 }
+a { 
+    color:inherit;
+    text-decoration: inherit;
+}
+a:hover { 
+    color:inherit; 
+    text-decoration: inherit;
+}
+a:visited {
+    color: inherit;
+    text-decoration: inherit;
+}
+.nav a { 
+    color:inherit; 
+    text-decoration: inherit;
+}
