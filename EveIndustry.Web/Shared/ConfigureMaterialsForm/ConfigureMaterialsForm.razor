@@ -1,0 +1,46 @@
+﻿
+
+<EditForm Model="model" OnSubmit="FormSubmit" class="e-modalForm">
+  <h3>Materual reduction factors</h3>
+  <div class="form-group">
+    <label for="inputME">Blueprint Material Efficiency</label>
+    <input type="text" @bind-value="model.BlueprintMe" class="form-control" id="inputME" placeholder="Blueprint ME"/>
+  </div>
+  <div class="form-group">
+    <label for="facilityKind">Facility Kind</label>
+    <InputSelect @bind-Value="model.FacilityKind" class="form-control" id="facilityKind" >
+      <option value="Other">Other</option>
+      <option value="EngeneeringComplex">Engeneering Complex</option>
+    </InputSelect>
+  </div>
+  
+  <div class="form-group">
+    <label for="facilityRigKind">Facility Kind</label>
+    <InputSelect @bind-Value="model.FacilityRigKind" class="form-control" id="facilityRigKind" >
+      <option value="None">None</option>
+      <option value="T1">T1</option>
+      <option value="T2"> T2 </option>
+    </InputSelect>
+  </div>
+  <button type="submit" class="btn btn-primary">Submit</button>
+  <button class="btn" @onclick="Close">Close</button>
+</EditForm>
+
+@code {
+
+  [CascadingParameter] BlazoredModalInstance ThisModal { get; set; }
+  
+  private ConfigureMaterialsModel model = new ConfigureMaterialsModel();
+  
+  
+  private void FormSubmit()
+  {
+    ThisModal.Close(ModalResult.Ok(model));
+  }
+
+  private void Close()
+  {
+    ThisModal.Close(ModalResult.Cancel());
+  }
+
+}

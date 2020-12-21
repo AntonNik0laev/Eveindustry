@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
 using Eveindustry.API;
-using Eveindustry.CLI;
 using Eveindustry.Core;
 using Eveindustry.Core.Models;
-using Eveindustry.Core.Models.Config;
 using Eveindustry.Shared;
+using Eveindustry.Shared.DTO;
 using Eveindustry.Shared.DTO.EveType;
 using Eveindustry.Shared.Profiles;
 using Eveindustry.Tests.Utils;
@@ -23,7 +20,7 @@ namespace Eveindustry.Tests
     {
         private EveType[] types;
         private ManufacturingInfoBuilder sut;
-        private SortedList<long, EveTypeDto> sorted;
+        private SortedList<long, EveTypeManufacturingParameters> sorted;
         
         [SetUp]
         public void Setup()
@@ -76,14 +73,18 @@ namespace Eveindustry.Tests
                 c.AddProfile(new DtoMappingProfile());
             });
 
-            var flatList = new List<EveType>() {etmain, etsub2, etsub3, etsub4, etsub5, etsub6, etsub7, etsub8, etsub9};
+            var flatList = new List<EveType> {etmain, etsub2, etsub3, etsub4, etsub5, etsub6, etsub7, etsub8, etsub9};
 
             var mapper = mapperConfig.CreateMapper();
             var mapped = mapper.Map<IList<EveTypeDto>>(flatList);
-            this.sorted = new SortedList<long, EveTypeDto>(mapped.ToDictionary(i => i.Id, i => i));
+            sorted = new SortedList<long, EveTypeManufacturingParameters>(mapped.ToDictionary(i => i.Id, i => new EveTypeManufacturingParameters
+            {
+                EveType = i,
+                Parameters = new ManufacturingParameters()
+            }));
             var mb = new ManufacturingInfoBuilder(mapper);
-            this.sut = mb;
-            this.types = new[]
+            sut = mb;
+            types = new[]
             {
                 etmain, // 0
                 etsub2, // 1
@@ -100,7 +101,8 @@ namespace Eveindustry.Tests
         [Test, Description("When getting build information and requested items exist, result should not be null or empty")]
         public void build_info_returns_non_empty_results()
         {
-            var result = this.sut.BuildInfo(1, this.sorted);
+
+            var result = sut.BuildInfo(1, sorted);
             Assert.NotNull(result, "Expected 'BuildInfo' return non empty results");
         }
 
@@ -109,26 +111,26 @@ namespace Eveindustry.Tests
                            "it's dependencies and all dependency dependencies down to buttom level")]
         public void build_info_returns_full_hierarchy()
         {
-            var result = this.sut.BuildInfo(1, this.sorted);
+            var result = sut.BuildInfo(1, sorted);
 
             //ROOT
-            result.Id.Should().Be(this.types[0].Id, "it's configured per eve type info");
+            result.Id.Should().Be(types[0].Id, "it's configured per eve type info");
             result.CanBeManufactured.Should().Be(true, "root item has blueprint");
 
             var rootRequirements = result.Requirements;
             rootRequirements.Should().NotBeNullOrEmpty("it's configured for blueprint information");
             rootRequirements.Should().HaveCount(4,"it's configured for blueprint information");
-            rootRequirements.Should().Contain(i => i.Material.Id == this.types[1].Id,
+            rootRequirements.Should().Contain(i => i.Material.Id == types[1].Id,
                 "it's configured for blueprint information");
-            rootRequirements.Should().Contain(i => i.Material.Id == this.types[2].Id,
+            rootRequirements.Should().Contain(i => i.Material.Id == types[2].Id,
                 "it's configured for blueprint information");
-            rootRequirements.Should().Contain(i => i.Material.Id == this.types[3].Id,
+            rootRequirements.Should().Contain(i => i.Material.Id == types[3].Id,
                 "it's configured for blueprint information");
-            rootRequirements.Should().Contain(i => i.Material.Id == this.types[4].Id,
+            rootRequirements.Should().Contain(i => i.Material.Id == types[4].Id,
                 "it's configured for blueprint information");
             
             //SUB2
-            var sub2Result = result.Requirements.First(r => r.Material.Id == this.types[1].Id);
+            var sub2Result = result.Requirements.First(r => r.Material.Id == types[1].Id);
             sub2Result.Quantity.Should().Be(10, 
                 "it's configured for root blueprint");
             sub2Result.Material.CanBeManufactured.Should().Be(true,
@@ -136,11 +138,11 @@ namespace Eveindustry.Tests
             var sub2Requirements = sub2Result.Material.Requirements;
             
             sub2Requirements.Should().HaveCount(1, "it's configured for blueprint");
-            sub2Requirements.Should().Contain(i => i.Material.Id == this.types[5].Id,
+            sub2Requirements.Should().Contain(i => i.Material.Id == types[5].Id,
                 "it's configured per blueprint");
             
             //SUB3
-            var sub3Result = result.Requirements.First(r => r.Material.Id == this.types[2].Id);
+            var sub3Result = result.Requirements.First(r => r.Material.Id == types[2].Id);
             sub3Result.Quantity.Should().Be(20, "It's configured for blueprint");
             sub3Result.Material.CanBeManufactured.Should().Be(false, "There is no blueprint for sub3");
             var sub3Requirements = sub3Result.Material.Requirements;
@@ -148,7 +150,7 @@ namespace Eveindustry.Tests
             sub3Requirements.Should().BeNullOrEmpty("no requirements configured for blueprint");
             
             //SUB4
-            var sub4Result = result.Requirements.First(r => r.Material.Id == this.types[3].Id);
+            var sub4Result = result.Requirements.First(r => r.Material.Id == types[3].Id);
             sub4Result.Quantity.Should().Be(30, 
                 "it's configured for root blueprint");
             sub4Result.Material.CanBeManufactured.Should().Be(true,
@@ -156,13 +158,13 @@ namespace Eveindustry.Tests
             var sub4Requirements = sub4Result.Material.Requirements;
             
             sub4Requirements.Should().HaveCount(2, "it's configured for blueprint");
-            sub4Requirements.Should().Contain(i => i.Material.Id == this.types[6].Id,
+            sub4Requirements.Should().Contain(i => i.Material.Id == types[6].Id,
                 "it's configured per blueprint");
-            sub4Requirements.Should().Contain(i => i.Material.Id == this.types[7].Id,
+            sub4Requirements.Should().Contain(i => i.Material.Id == types[7].Id,
                 "it's configured per blueprint");
             
             //SUB5
-            var sub5Result = result.Requirements.First(r => r.Material.Id == this.types[4].Id);
+            var sub5Result = result.Requirements.First(r => r.Material.Id == types[4].Id);
             sub5Result.Quantity.Should().Be(40, "It's configured for blueprint");
             sub5Result.Material.CanBeManufactured.Should().Be(false, "There is no blueprint for sub5");
             var sub5Requirements = sub3Result.Material.Requirements;
@@ -170,7 +172,7 @@ namespace Eveindustry.Tests
             sub5Requirements.Should().BeNullOrEmpty("no requirements configured for blueprint");
             
             //SUB6
-            var sub6Result = sub2Result.Material.Requirements.First(r => r.Material.Id == this.types[5].Id);
+            var sub6Result = sub2Result.Material.Requirements.First(r => r.Material.Id == types[5].Id);
             sub6Result.Quantity.Should().Be(50, "It's configured for blueprint");
             sub6Result.Material.CanBeManufactured.Should().Be(false, "There is no blueprint for sub6");
             var sub6Requirements = sub3Result.Material.Requirements;
@@ -178,24 +180,24 @@ namespace Eveindustry.Tests
             sub6Requirements.Should().BeNullOrEmpty("no requirements configured for blueprint");
             
             //SUB7
-            var sub7Result = sub4Result.Material.Requirements.First(r => r.Material.Id == this.types[6].Id);
+            var sub7Result = sub4Result.Material.Requirements.First(r => r.Material.Id == types[6].Id);
             sub7Result.Quantity.Should().Be(60, "It's configured for blueprint");
             sub4Result.Material.CanBeManufactured.Should().Be(true,
                 "there is blueprint for sub7");
             var sub7Requirements = sub7Result.Material.Requirements;
             
             sub7Requirements.Should().HaveCount(1, "it's configured for blueprint");
-            sub7Requirements.Should().Contain(i => i.Material.Id == this.types[7].Id,
+            sub7Requirements.Should().Contain(i => i.Material.Id == types[7].Id,
                 "it's configured per blueprint");
             
             //SUB8
-            var sub8Result = sub7Result.Material.Requirements.First(r => r.Material.Id == this.types[7].Id);
+            var sub8Result = sub7Result.Material.Requirements.First(r => r.Material.Id == types[7].Id);
             sub8Result.Quantity.Should().Be(70, "It's configured for blueprint");
             sub8Result.Material.CanBeManufactured.Should().Be(true, "there is blueprint for sub8");
             var sub8Requirements = sub8Result.Material.Requirements;
             
             sub8Requirements.Should().HaveCount(1, "it's configured per blueprint");
-            sub8Requirements.Should().Contain(i => i.Material.Id == this.types[8].Id,
+            sub8Requirements.Should().Contain(i => i.Material.Id == types[8].Id,
                 "it's configured per blueprint");
         }
 
@@ -203,19 +205,19 @@ namespace Eveindustry.Tests
                            " aggregated for each item")]
         public void get_flat_list_should_return_aggregated_list_with_total_quantities()
         {
-            var result = this.sut.GetFlatManufacturingList(this.sut.BuildInfo(1, this.sorted), 2, Array.Empty<long>());
+            var result = sut.GetFlatManufacturingList(sut.BuildInfo(1, sorted), 2).Values;
 
-            result.Count().Should().Be(this.types.Count(), "Aggregated list should contain no duplicates");
-            var main = result.First(i => i.Material.Id == this.types[0].Id);
+            result.Count().Should().Be(types.Count(), "Aggregated list should contain no duplicates");
+            var main = result.First(i => i.Material.Id == types[0].Id);
 
-            var sub2 = result.First(i => i.Material.Id == this.types[1].Id);
-            var sub3 = result.First(i => i.Material.Id == this.types[2].Id);
-            var sub4 = result.First(i => i.Material.Id == this.types[3].Id);
-            var sub5 = result.First(i => i.Material.Id == this.types[4].Id);
-            var sub6 = result.First(i => i.Material.Id == this.types[5].Id);
-            var sub7 = result.First(i => i.Material.Id == this.types[6].Id);
-            var sub8 = result.First(i => i.Material.Id == this.types[7].Id);
-            var sub9 = result.First(i => i.Material.Id == this.types[8].Id);
+            var sub2 = result.First(i => i.Material.Id == types[1].Id);
+            var sub3 = result.First(i => i.Material.Id == types[2].Id);
+            var sub4 = result.First(i => i.Material.Id == types[3].Id);
+            var sub5 = result.First(i => i.Material.Id == types[4].Id);
+            var sub6 = result.First(i => i.Material.Id == types[5].Id);
+            var sub7 = result.First(i => i.Material.Id == types[6].Id);
+            var sub8 = result.First(i => i.Material.Id == types[7].Id);
+            var sub9 = result.First(i => i.Material.Id == types[8].Id);
             main.Quantity.Should().Be(2, "it's configured as method parameter");
             main.RemainingQuantity.Should().Be(0, "no items should remain after manufacturing");
             sub2.Quantity.Should().Be(10 * 2, "requested 2 items of main, each requires 10 items of sub2");
@@ -243,7 +245,13 @@ namespace Eveindustry.Tests
         public void get_flat_list_with_ignored_ids_parameter_should_not_contain_dependencies_for_ignored_ids()
         {
             var ignoreList = new[] {2L, 3L};
-            var results = sut.GetFlatManufacturingList(sut.BuildInfo(1, this.sorted), 1, ignoreList);
+            
+            foreach (var i in ignoreList)
+            {
+                sorted[i].Parameters.ForceBuy = true;
+            }
+            
+            var results = sut.GetFlatManufacturingList(sut.BuildInfo(1, sorted), 1).Values;
             results.Should().HaveCount(8, "Ignore list contains one dependency which should be excluded");
             results.Should().NotContain(i => i.Material.Id == 6,
                 "Excluded item id is 6, so it should not be in flat list");
@@ -253,7 +261,11 @@ namespace Eveindustry.Tests
         public void stages_should_not_contain_dependencies_of_items_from_ignore_list()
         {
             var ignoreList = new[] {2L, 3L, 8L};
-            var results = sut.GroupIntoStages(sut.GetFlatManufacturingList(sut.BuildInfo(1, this.sorted), 1, ignoreList), ignoreList);
+            foreach (var i in ignoreList)
+            {
+                sorted[i].Parameters.ForceBuy = true;
+            }
+            var results = sut.GroupIntoStages(sut.GetFlatManufacturingList(sut.BuildInfo(1L,sorted), 1).Values);
             results.Should().HaveCount(4, "manufacturing should contain 4 stages");
             var stage0 = results.First();
             stage0.Should().HaveCount(4);

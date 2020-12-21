@@ -13,7 +13,7 @@
         <div class="e-search-results-container">
             @foreach (var item in @SearchItems)
             {
-                <a href="/type/@item.Id" class="e-search-item-container">
+                <a href="/type/@item.Id" class="e-search-item-container" @onclick="SearchClick">
                     <img src="https://images.evetech.net/types/@item.Id/icon" height="100%">
                     <div class="e-search-item-name">
                         <span>@item.Name</span>
@@ -51,5 +51,11 @@
         Console.WriteLine($"On search changed: {newText}");
         var result = await EveItemSearchService.Search(newText);
         this.SearchItems = result;
+    }
+
+    private void SearchClick(MouseEventArgs args)
+    {
+        SearchItems.Clear();
+        TextboxVal = "";
     }
 }

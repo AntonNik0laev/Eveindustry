@@ -3,24 +3,32 @@
 @using EveIndustry.Web.Services
 @using Eveindustry.Shared
 @using System.Collections.ObjectModel
+@using BlazorTable
+@using Eveindustry.Shared.DTO
+@using EveIndustry.Web.Shared.ConfigureMaterialsForm
 
 @inject IEveItemSearchService EveItemSearchService
 @inject IManufacturingInfoBuilder ManufacturingInfoBuilder;
+@inject IModalService Modal;
 
 <h1>Manufacturing plan for @ItemToBuild?.Name . Quantity:         <input @onkeyup="async (t) => await OnSearchChanged(t)" Class="e-autocomplete" @bind-value="Quantity" @bind-value:event="oninput"/> </h1>
-<button class="btn btn-primary" @onclick="ReloadWithSelectedItems">Reload</button>
+
+<button class="btn btn-primary" @onclick="SelectAll">All</button>
+<button class="btn btn-primary"  @onclick="ConfigureSelected" >Configure Selected</button>
+<button class="btn" @onclick="SetBuild">Build</button> 
+<button class="btn" @onclick="SetBuy">Buy</button> 
 @for (int i = 0; i < Items.Count(); i++)
 {
     int index = i;
     <h2>Stage @i</h2> 
-    <BlazorTable.Table PageSize="9999" TableItem="EveManufacturialQuantity" Items="Items[index]" SelectionType="BlazorTable.SelectionType.Multiple" SelectedItems="SelectedItems[index]" >
+    <BlazorTable.Table ShowFooter="true" PageSize="9999" TableItem="EveManufacturialQuantity" Items="Items[index]" SelectionType="BlazorTable.SelectionType.Multiple" SelectedItems="SelectedItems[index]" >
         <BlazorTable.Column TableItem="EveManufacturialQuantity" Title="Id" Field="@(x => x.Material.Id)" Width="4%"/>
         <BlazorTable.Column TableItem="EveManufacturialQuantity" Sortable="true" Title="Name" Field="@(x => x.Material.Name)" Width="30%"/>
-        <BlazorTable.Column TableItem="EveManufacturialQuantity" Sortable="true" Title="Quantity" Field="@(x => x.Quantity)" Width="12%"/>
-        <BlazorTable.Column TableItem="EveManufacturialQuantity" Sortable="true" Title="JBV" Field="@(x => x.TotalJitaBuyPrice)" Width="14%"/>
-        <BlazorTable.Column TableItem="EveManufacturialQuantity" Sortable="true" Title="JSV" Field="@(x => x.TotalJitaSellPrice)" Width="14%"/>
-        <BlazorTable.Column TableItem="EveManufacturialQuantity" Sortable="true" Title="Materials JSV" Field="@(x => x.MaterialsJitaBuyPrice)" Width="14%"/>
-        <BlazorTable.Column TableItem="EveManufacturialQuantity" Sortable="true" Title="Materials JSV" Field="@(x => x.MaterialsJitaSellPrice)" Width="14%"/>
+        <BlazorTable.Column TableItem="EveManufacturialQuantity" Format = "N2" Aggregate="AggregateType.Sum" Sortable="true" Title="Quantity" Field="@(x => x.Quantity)" Width="12%"/>
+        <BlazorTable.Column TableItem="EveManufacturialQuantity" Format = "N2" Aggregate="AggregateType.Sum" Sortable="true" Title="JBV" Field="@(x => x.TotalJitaBuyPrice)" Width="14%"/>
+        <BlazorTable.Column TableItem="EveManufacturialQuantity" Format = "N2" Aggregate="AggregateType.Sum" Sortable="true" Title="JSV" Field="@(x => x.TotalJitaSellPrice)" Width="14%"/>
+        <BlazorTable.Column TableItem="EveManufacturialQuantity" Format = "N2" Aggregate="AggregateType.Sum" Sortable="true" Title="Materials JSV" Field="@(x => x.MaterialsJitaBuyPrice)" Width="14%"/>
+        <BlazorTable.Column TableItem="EveManufacturialQuantity" Format = "N2" Aggregate="AggregateType.Sum" Sortable="true" Title="Materials JSV" Field="@(x => x.MaterialsJitaSellPrice)" Width="14%"/>
     </BlazorTable.Table>
 }
 
@@ -36,18 +44,20 @@
 
     public IList<IEnumerable<EveManufacturialQuantity>> Items { get; set; } = new List<IEnumerable<EveManufacturialQuantity>>();
     
-    public EveTypeDto ItemToBuild { get; set; }
+    public EveItemManufacturingInfo ItemToBuild { get; set; }
 
-    private SortedList<long, EveTypeDto> rawItems;
+    private IDictionary<long, EveManufacturialQuantity> allPlannedItems;
 
     protected override async Task OnParametersSetAsync()
     {
         var items = await EveItemSearchService.GetAllDependent(this.Id);
 
-        this.ItemToBuild = items.First(i => i.Id == Id);
-        rawItems = new SortedList<long, EveTypeDto>(items.ToDictionary(i => i.Id, i => i));
-        var info = ManufacturingInfoBuilder.BuildInfo(this.Id, rawItems);
-        this.Items = ManufacturingInfoBuilder.GroupIntoStages(ManufacturingInfoBuilder.GetFlatManufacturingList(info, this.Quantity), Array.Empty<long>()).ToList();
+        var rawItems =  new SortedList<long, EveTypeManufacturingParameters>(items.ToDictionary(i => i.Id,
+            i => new EveTypeManufacturingParameters(){EveType = i, Parameters = new ManufacturingParameters()}));
+        this.ItemToBuild  = ManufacturingInfoBuilder.BuildInfo(this.Id, rawItems);
+
+        this.allPlannedItems = ManufacturingInfoBuilder.GetFlatManufacturingList(this.ItemToBuild, this.Quantity);
+        this.Items = ManufacturingInfoBuilder.GroupIntoStages(allPlannedItems.Values).ToList();
         foreach (var item in this.Items)
         {
             SelectedItems.Add(new List<EveManufacturialQuantity>());
@@ -57,38 +67,80 @@
 
     private void ReloadWithSelectedItems()
     {
-        var ignoreFlat = this.SelectedItems.SelectMany(i => i).Select(i => i.Material.Id).ToList();
-        
-        var info = ManufacturingInfoBuilder.BuildInfo(this.Id, rawItems);
         this.Items.Clear();
-        this.Items = ManufacturingInfoBuilder.GroupIntoStages(ManufacturingInfoBuilder.GetFlatManufacturingList(info, this.Quantity, ignoreFlat), ignoreFlat).ToList();
-        for (int i = 0; i < this.Items.Count; i++)
-        {
-            this.SelectedItems[i] = new List<EveManufacturialQuantity>();
-            foreach (var stageItem in this.Items[i])
-            {
-                if (ignoreFlat.Contains(stageItem.Material.Id))
-                {
-                    this.SelectedItems[i].Add(stageItem);
-                }
-            }
-        }
-    }
-
-    private void OnSelectedChanged(IEnumerable<EveManufacturialQuantity> selected, int index)
-    {
-        SelectedItems[index] = selected.ToList();
-        ReloadWithSelectedItems();
-    }
-
-    private void OnQuantityChanged(object arg)
-    {
-        ReloadWithSelectedItems();
+        this.allPlannedItems = ManufacturingInfoBuilder.GetFlatManufacturingList(this.ItemToBuild, this.Quantity, this.allPlannedItems);
+        this.Items = ManufacturingInfoBuilder.GroupIntoStages(this.allPlannedItems.Values).ToList();
     }
 
     private async Task OnSearchChanged(KeyboardEventArgs keyboardEventArgs)
     {
         ReloadWithSelectedItems();
+        
+    }
+
+    public BlazorTable.Column<EveManufacturialQuantity> Column1 { get; set; }
+
+    private async Task ConfigureSelected()
+    {
+        var configureWindow = Modal.Show<ConfigureMaterialsForm>();
+        var result = await configureWindow.Result;
+        if (result.Cancelled)
+        {
+            return;
+        }
+        var data = result.Data as ConfigureMaterialsModel;
+        if (data == null)
+        {
+            return;
+        }
+
+        foreach (var item in SelectedItems.SelectMany(i => i))
+        {
+            item.Material.BlueprintME = data.BlueprintMe;
+            item.Material.FacilityKind = data.FacilityKind switch {
+                "EngeneeringComplex" => FacilityKinds.EngeneeringComplex,
+                _ => FacilityKinds.Other
+                };
+            item.Material.FacilityRigKind = data.FacilityRigKind switch {
+                "T1" => FacilityRigKinds.T1,
+                "T2" => FacilityRigKinds.T2,
+                _ => FacilityRigKinds.None
+                };
+            Console.WriteLine($"{item.Material.Name}: ME: {item.Material.BlueprintME}; rig: {item.Material.FacilityRigKind}; facility: {item.Material.FacilityKind}");
+        }
+        ReloadWithSelectedItems();
+    }
+
+    private void SetBuild()
+    {
+        foreach (var group in SelectedItems)
+        {
+            foreach (var item in group)
+            {
+                item.Material.ForceBuy = false;
+            }
+        }
+        ReloadWithSelectedItems();
+    }
+    
+    private void SetBuy()
+    {
+        foreach (var group in SelectedItems)
+        {
+            foreach (var item in group)
+            {
+                item.Material.ForceBuy = true;
+            }
+        }
+        ReloadWithSelectedItems();
+    }
+
+    private void SelectAll()
+    {
+        for (int i = 0; i < Items.Count; i++)
+        {
+            SelectedItems[i] = Items[i].ToList();
+        }
     }
 
 }

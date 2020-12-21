@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Text;
 using AutoMapper;
+using Blazored.Modal;
 using BlazorTable;
 using Eveindustry.Shared;
 using Eveindustry.Shared.Profiles;
@@ -31,6 +32,7 @@ namespace EveIndustry.Web
                 sp => new HttpClient {BaseAddress = new Uri(baseAddress)})
                 .AddAutoMapper(c => c.AddProfile<EveItemManufacturingInfoMappingProfile>())
                 .AddBlazorTable()
+                .AddBlazoredModal()
                 
                 .AddScoped<IEveItemSearchService, EveItemSearchService>()
                 .AddScoped<IManufacturingInfoBuilder, ManufacturingInfoBuilder>()

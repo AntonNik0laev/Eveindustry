@@ -7,6 +7,7 @@ using AutoMapper;
 using Eveindustry.Core;
 using Eveindustry.Core.Models;
 using Eveindustry.Shared;
+using Eveindustry.Shared.DTO;
 using Eveindustry.Shared.DTO.EveType;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -46,10 +47,19 @@ namespace Eveindustry.CLI
             var allDependencies = this.etRepository.GetAllDependencies(itemToBuild.Id).ToList();
             
             var mapped = this.mapper.Map<IList<EveTypeDto>>(allDependencies);
-            var sorted = new SortedList<long, EveTypeDto>(mapped.ToDictionary(i => i.Id, i => i));
-            var infoTree = this.manufacturingBuilder.BuildInfo(itemToBuild.Id,sorted);
-            var flat = this.manufacturingBuilder.GetFlatManufacturingList(infoTree, quantity, terminationTypes);
-            var grouped = this.manufacturingBuilder.GroupIntoStages(flat, terminationTypes);
+            var sorted = new SortedList<long, EveTypeManufacturingParameters>(mapped.ToDictionary(i => i.Id, i => new EveTypeManufacturingParameters()
+            {
+                EveType = i,
+                Parameters = new ManufacturingParameters()
+            }));
+            foreach (var terminationType in terminationTypes)
+            {
+                sorted[terminationType].Parameters.ForceBuy = true;
+            }
+            var infoTree = this.manufacturingBuilder.BuildInfo(itemToBuild.Id, sorted);
+            var flat = this.manufacturingBuilder.GetFlatManufacturingList(infoTree, quantity);
+            
+            var grouped = this.manufacturingBuilder.GroupIntoStages(flat.Values);
 
             PrintStagesDetails(grouped);
             this.applicationLifetime.StopApplication();

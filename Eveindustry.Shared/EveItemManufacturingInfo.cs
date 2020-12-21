@@ -6,24 +6,8 @@ namespace Eveindustry.Shared
     /// <summary>
     /// Information required for manufacturing eve item.
     /// </summary>
-    public class EveItemManufacturingInfo
+    public partial class EveItemManufacturingInfo
     {
-        /// <summary>
-        /// Manufacturing activity kinds - Manufacturing or Reaction.
-        /// </summary>
-        public enum ActivityKinds
-        {
-            /// <summary>
-            /// Manufacturing activity
-            /// </summary>
-            Manufacturing,
-
-            /// <summary>
-            /// Reaction activity
-            /// </summary>
-            Reaction,
-        }
-
         /// <summary>
         /// Gets or sets Eve type id.
         /// </summary>
@@ -82,6 +66,33 @@ namespace Eveindustry.Shared
         /// Gets a value indicating whether item can be manufactured.
         /// </summary>
         public bool CanBeManufactured => this.Requirements.Count > 0;
+        
+        /// <summary>
+        /// Do not compute given item for manufacturing plan, assuming it's bought, not built
+        /// </summary>
+        public bool ForceBuy { get; set; }
+        
+        /// <summary>
+        /// Gets or sets material efficiency value
+        /// </summary>
+        public int BlueprintME { get; set; }
+        
+        /// <summary>
+        /// Gets or sets time efficiency value
+        /// </summary>
+        public int BlueprintTE { get; set; }
+        
+        /// <summary>
+        /// Gets or sets production system name
+        /// </summary>
+        public string SystemName { get; set; }
+        
+        /// <summary>
+        /// Gets or sets type of region
+        /// </summary>
+        public RegionKinds RegionKind { get; set; }
+        public FacilityKinds FacilityKind { get; set; }
+        public FacilityRigKinds FacilityRigKind { get; set; }
 
         // Equality members
 
